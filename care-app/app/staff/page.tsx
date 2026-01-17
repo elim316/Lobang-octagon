@@ -1,3 +1,5 @@
-export default function StaffHome() {
-  return <div style={{ padding: 16 }}>Staff dashboard (placeholder)</div>;
+import { redirect } from "next/navigation";
+
+export default function StaffIndex() {
+  redirect("/staff/2026-01");
 }
