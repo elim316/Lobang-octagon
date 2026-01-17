@@ -5,13 +5,15 @@ import { usePathname } from "next/navigation";
 
 type MonthItem = { label: string; slug: string };
 
-function isDataTab(pathname: string) {
-  return pathname.includes("/data");
-}
-
 function getActiveMonth(pathname: string, fallback: string) {
   const parts = pathname.split("/").filter(Boolean); // ["staff", "2026-01", "data"]
   return parts[1] || fallback;
+}
+
+function getActiveTab(pathname: string) {
+  if (pathname.includes("/data")) return "data";
+  if (pathname.includes("/calendar")) return "calendar";
+  return "events";
 }
 
 export default function StaffShell({
@@ -27,7 +29,21 @@ export default function StaffShell({
 
   const fallbackMonth = months[0]?.slug ?? "2026-01";
   const activeMonth = getActiveMonth(pathname, fallbackMonth);
-  const activeIsData = isDataTab(pathname);
+  const activeTab = getActiveTab(pathname);
+
+  const tabStyle = (isActive: boolean) => ({
+    display: "inline-flex",
+    alignItems: "center",
+    padding: "8px 12px",
+    borderRadius: 12,
+    border: "1px solid #eee",
+    textDecoration: "none",
+    color: "#111",
+    background: isActive ? "#fff" : "#f7f7f7",
+    fontWeight: isActive ? 600 : 400,
+    whiteSpace: "nowrap" as const,
+    flex: "0 0 auto",
+  });
 
   return (
     <div style={{ display: "flex", minHeight: "100vh" }}>
@@ -78,38 +94,38 @@ export default function StaffShell({
       </aside>
 
       <main style={{ flex: 1, padding: 16 }}>
-        <div style={{ display: "flex", gap: 10, marginBottom: 16 }}>
-          <Link
-            href={`/staff/${activeMonth}`}
-            style={{
-              padding: "8px 12px",
-              borderRadius: 12,
-              border: "1px solid #eee",
-              textDecoration: "none",
-              color: "#111",
-              background: activeIsData ? "#f7f7f7" : "#fff",
-              fontWeight: activeIsData ? 400 : 600,
-            }}
-          >
+        {/* Tabs */}
+        <div
+          style={{
+            display: "flex",
+            gap: 10,
+            marginBottom: 16,
+            flexWrap: "nowrap",
+            alignItems: "center",
+            overflowX: "auto",
+            WebkitOverflowScrolling: "touch",
+          }}
+        >
+          <Link href={`/staff/${activeMonth}`} style={tabStyle(activeTab === "events")}>
             Events
           </Link>
 
           <Link
             href={`/staff/${activeMonth}/data`}
-            style={{
-              padding: "8px 12px",
-              borderRadius: 12,
-              border: "1px solid #eee",
-              textDecoration: "none",
-              color: "#111",
-              background: activeIsData ? "#fff" : "#f7f7f7",
-              fontWeight: activeIsData ? 600 : 400,
-            }}
+            style={tabStyle(activeTab === "data")}
           >
             Data
           </Link>
+
+          <Link
+            href={`/staff/${activeMonth}/calendar`}
+            style={tabStyle(activeTab === "calendar")}
+          >
+            Calendar
+          </Link>
         </div>
 
+        {/* Content */}
         <div
           style={{
             border: "1px solid #eee",
