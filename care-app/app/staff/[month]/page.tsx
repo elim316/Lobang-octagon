@@ -1,19 +1,16 @@
-import Link from "next/link";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 function monthRange(monthSlug: string) {
-  // monthSlug like "2026-01"
   const [yStr, mStr] = monthSlug.split("-");
   const y = Number(yStr);
   const m = Number(mStr);
   const start = new Date(Date.UTC(y, m - 1, 1, 0, 0, 0));
-  const end = new Date(Date.UTC(y, m, 1, 0, 0, 0)); // next month
+  const end = new Date(Date.UTC(y, m, 1, 0, 0, 0));
   return { startISO: start.toISOString(), endISO: end.toISOString() };
 }
 
-function fmtDateTime(isoOrDate: string) {
-  const d = new Date(isoOrDate);
-  // simple local display
+function fmtDateTime(iso: string) {
+  const d = new Date(iso);
   return d.toLocaleString(undefined, {
     weekday: "short",
     year: "numeric",
@@ -22,12 +19,6 @@ function fmtDateTime(isoOrDate: string) {
     hour: "2-digit",
     minute: "2-digit",
   });
-}
-
-function addMinutes(dateIso: string, minutes: number) {
-  const d = new Date(dateIso);
-  d.setMinutes(d.getMinutes() + minutes);
-  return d.toISOString();
 }
 
 export default async function StaffMonthEventsPage({
@@ -41,11 +32,20 @@ export default async function StaffMonthEventsPage({
   const supabase = await createSupabaseServerClient();
 
   const { data: events, error } = await supabase
-    .from("events")
-    .select("id, name, event_type, no_of_people, date_and_time, duration")
-    .gte("date_and_time", startISO)
-    .lt("date_and_time", endISO)
-    .order("date_and_time", { ascending: true });
+    .from("Events")
+    .select(
+      `
+      id,
+      Name,
+      "Event Type",
+      "No. of people",
+      "Date and Time",
+      Duration
+    `
+    )
+    .gte("Date and Time", startISO)
+    .lt("Date and Time", endISO)
+    .order("Date and Time", { ascending: true });
 
   if (error) {
     return (
@@ -57,47 +57,39 @@ export default async function StaffMonthEventsPage({
   }
 
   return (
-    <div>
+    <div style={{ display: "grid", gap: 12 }}>
       <h3 style={{ marginTop: 0 }}>Events for {month}</h3>
 
-      {!events || events.length === 0 ? (
-        <p>No events found for this month.</p>
-      ) : (
-        <div style={{ display: "grid", gap: 10 }}>
-          {events.map((e) => {
-            const startText = fmtDateTime(e.date_and_time);
-            const endIso = addMinutes(e.date_and_time, Number(e.duration ?? 0));
-            const endText = fmtDateTime(endIso);
+      <div style={{ display: "grid", gap: 10 }}>
+        {(events ?? []).map((e) => {
+          const start = e["Date and Time"];
+          const durationMin = Number(e.Duration ?? 0);
+          const end = new Date(new Date(start).getTime() + durationMin * 60_000).toISOString();
 
-            return (
-              <Link
-                key={e.id}
-                href={`/staff/${month}/events/${e.id}`}
-                style={{
-                  padding: 12,
-                  border: "1px solid #eee",
-                  borderRadius: 12,
-                  textDecoration: "none",
-                  color: "#111",
-                  display: "grid",
-                  gap: 6,
-                }}
-              >
-                <div style={{ fontWeight: 600 }}>{e.name}</div>
-                <div style={{ fontSize: 14, opacity: 0.85 }}>
-                  {e.event_type ?? "Uncategorised"}
-                </div>
-                <div style={{ fontSize: 14, opacity: 0.85 }}>
-                  {startText} to {endText}
-                </div>
-                <div style={{ fontSize: 14, opacity: 0.85 }}>
-                  Needed: {e.no_of_people ?? 0}
-                </div>
-              </Link>
-            );
-          })}
-        </div>
-      )}
+          return (
+            <div
+              key={e.id}
+              style={{
+                border: "1px solid #eee",
+                borderRadius: 16,
+                padding: 16,
+                background: "#fff",
+              }}
+            >
+              <div style={{ fontWeight: 700, fontSize: 16 }}>{e.Name}</div>
+              <div style={{ opacity: 0.8, marginTop: 6 }}>{e["Event Type"] ?? ""}</div>
+              <div style={{ marginTop: 6, opacity: 0.85 }}>
+                {fmtDateTime(start)} to {fmtDateTime(end)}
+              </div>
+              <div style={{ marginTop: 6, opacity: 0.85 }}>
+                Needed: {Number(e["No. of people"] ?? 0)}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {!events?.length ? <p>No events found for this month.</p> : null}
     </div>
   );
 }

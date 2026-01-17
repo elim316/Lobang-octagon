@@ -1,5 +1,6 @@
-import StaffShell from "./StaffShell";
+// app/staff/layout.tsx
+import StaffShellServer from "./StaffShellServer";
 
 export default function StaffLayout({ children }: { children: React.ReactNode }) {
-  return <StaffShell>{children}</StaffShell>;
+  return <StaffShellServer>{children}</StaffShellServer>;
 }

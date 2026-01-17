@@ -5,14 +5,15 @@ function monthRange(monthSlug: string) {
   const y = Number(yStr);
   const m = Number(mStr);
   const start = new Date(Date.UTC(y, m - 1, 1, 0, 0, 0));
-  const end = new Date(Date.UTC(y, m, 1, 0, 0, 0));
+  const end = new Date(Date.UTC(y, m, 1, 0, 0, 0)); // next month
   return { startISO: start.toISOString(), endISO: end.toISOString() };
 }
 
-function fmtDate(iso: string) {
+function fmtDateTime(iso: string) {
   const d = new Date(iso);
   return d.toLocaleString(undefined, {
     weekday: "short",
+    year: "numeric",
     month: "short",
     day: "2-digit",
     hour: "2-digit",
@@ -30,29 +31,45 @@ export default async function StaffMonthDataPage({
 
   const supabase = await createSupabaseServerClient();
 
-  // 1) Fetch events in this month
+  // 1) Get events for the month (using your exact column names)
   const { data: events, error: eventsErr } = await supabase
-    .from('Events') // if this fails, change to: .from("Events") with exact casing in your API
-    .select('id, Name, "No of People", "Date and Time"')
-    .gte('Date and Time', startISO)
-    .lt('Date and Time', endISO)
-    .order('Date and Time', { ascending: true });
-
-  // If your table is quoted in SQL ("Events"), the JS client name is usually "Events"
-  // If the above errors, replace .from('Events') with .from("Events") and update column names accordingly.
+    .from("Events")
+    .select(
+      `
+      id,
+      Name,
+      "No. of people",
+      "Date and Time"
+    `
+    )
+    .gte("Date and Time", startISO)
+    .lt("Date and Time", endISO)
+    .order("Date and Time", { ascending: true });
 
   if (eventsErr) {
     return (
       <div>
         <h3 style={{ marginTop: 0 }}>Data for {month}</h3>
-        <p style={{ color: "crimson" }}>Failed to load events: {eventsErr.message}</p>
+        <p style={{ color: "crimson" }}>
+          Failed to load events: {eventsErr.message}
+        </p>
       </div>
     );
   }
 
-  const eventIds = (events ?? []).map((e: any) => e.id);
+  const eventIds = (events ?? []).map((e) => e.id);
 
-  // 2) Fetch volunteer signups for those events
+  // If there are no events, we can stop early
+  if (!eventIds.length) {
+    return (
+      <div>
+        <h3 style={{ marginTop: 0 }}>Data for {month}</h3>
+        <p>No events found for this month.</p>
+      </div>
+    );
+  }
+
+  // 2) Get signups for these events
   const { data: signups, error: signupsErr } = await supabase
     .from("event_volunteers")
     .select("event_id")
@@ -80,58 +97,54 @@ export default async function StaffMonthDataPage({
       <div>
         <h3 style={{ marginTop: 0 }}>Coverage for {month}</h3>
         <p style={{ marginTop: 6, opacity: 0.8 }}>
-          Each row shows required volunteers vs signed-up volunteers.
+          Required vs signed-up volunteers per event.
         </p>
       </div>
 
-      {(events ?? []).length === 0 ? (
-        <p>No events found for this month.</p>
-      ) : (
-        <div style={{ display: "grid", gap: 10 }}>
-          {(events ?? []).map((e: any) => {
-            const needed = Number(e["No of People"] ?? 0);
-            const signed = counts.get(e.id) ?? 0;
-            const ok = signed >= needed;
+      <div style={{ display: "grid", gap: 10 }}>
+        {(events ?? []).map((e) => {
+          const needed = Number(e["No. of people"] ?? 0);
+          const signed = counts.get(e.id) ?? 0;
+          const ok = signed >= needed;
 
-            return (
-              <div
-                key={e.id}
-                style={{
-                  border: "1px solid #eee",
-                  borderRadius: 14,
-                  padding: 12,
-                  display: "flex",
-                  justifyContent: "space-between",
-                  gap: 12,
-                  alignItems: "center",
-                }}
-              >
-                <div style={{ display: "grid", gap: 4 }}>
-                  <div style={{ fontWeight: 600 }}>{e.Name}</div>
-                  <div style={{ fontSize: 14, opacity: 0.85 }}>
-                    {fmtDate(e["Date and Time"])}
-                  </div>
-                  <div style={{ fontSize: 14, opacity: 0.85 }}>
-                    {signed} signed / {needed} needed
-                  </div>
+          return (
+            <div
+              key={e.id}
+              style={{
+                border: "1px solid #eee",
+                borderRadius: 14,
+                padding: 12,
+                display: "flex",
+                justifyContent: "space-between",
+                gap: 12,
+                alignItems: "center",
+              }}
+            >
+              <div style={{ display: "grid", gap: 4 }}>
+                <div style={{ fontWeight: 600 }}>{e.Name}</div>
+                <div style={{ fontSize: 14, opacity: 0.85 }}>
+                  {fmtDateTime(e["Date and Time"])}
                 </div>
-
-                <div
-                  style={{
-                    padding: "6px 10px",
-                    borderRadius: 999,
-                    border: "1px solid #eee",
-                    fontWeight: 600,
-                    background: ok ? "#e8fff1" : "#fff8d9",
-                  }}
-                >
-                  {ok ? "Enough" : "Not enough"}
+                <div style={{ fontSize: 14, opacity: 0.85 }}>
+                  {signed} signed / {needed} needed
                 </div>
               </div>
-            );
-          })}
-        </div>
-      )}
+
+              <div
+                style={{
+                  padding: "6px 10px",
+                  borderRadius: 999,
+                  border: "1px solid #eee",
+                  fontWeight: 600,
+                  background: ok ? "#e8fff1" : "#fff8d9",
+                }}
+              >
+                {ok ? "Enough" : "Not enough"}
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
