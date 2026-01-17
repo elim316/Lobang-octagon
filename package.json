@@ -1,0 +1,9 @@
+{
+  "name": "lobang-octagon-root",
+  "private": true,
+  "scripts": {
+    "dev": "npm --prefix care-app run dev",
+    "build": "npm --prefix care-app run build",
+    "start": "npm --prefix care-app run start"
+  }
+}
