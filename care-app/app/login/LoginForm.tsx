@@ -1,5 +1,7 @@
+// app/login/LoginForm.tsx
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
@@ -60,12 +62,34 @@ export default function LoginForm() {
           borderRadius: 10,
           border: "1px solid #ddd",
           cursor: loading ? "not-allowed" : "pointer",
+          background: "#fff",
+          fontWeight: 600,
         }}
       >
         {loading ? "Logging in..." : "Login"}
       </button>
 
-      {errorMsg ? <p style={{ color: "crimson", margin: 0 }}>{errorMsg}</p> : null}
+      {/* Sign up link (preserves ?next=...) */}
+      <Link
+        href={`/signup?next=${encodeURIComponent(next)}`}
+        style={{
+          padding: 10,
+          borderRadius: 10,
+          border: "1px solid #ddd",
+          textDecoration: "none",
+          color: "#111",
+          display: "block",
+          textAlign: "center",
+          background: "#f7f7f7",
+          fontWeight: 600,
+        }}
+      >
+        Create an account
+      </Link>
+
+      {errorMsg ? (
+        <p style={{ color: "crimson", margin: 0 }}>{errorMsg}</p>
+      ) : null}
     </form>
   );
 }
