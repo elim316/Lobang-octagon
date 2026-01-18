@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import LogoutButton from "@/app/components/LogoutButton";
 
 type MonthItem = { label: string; slug: string };
 
@@ -53,43 +54,51 @@ export default function StaffShell({
           borderRight: "1px solid #eee",
           padding: 16,
           background: "#fafafa",
+          display: "flex",
+          flexDirection: "column",
         }}
       >
-        <h2 style={{ margin: "0 0 12px 0" }}>STAFF</h2>
+        <div>
+          <h2 style={{ margin: "0 0 12px 0" }}>STAFF</h2>
 
-        {error ? (
-          <p style={{ color: "crimson", fontSize: 13 }}>
-            Failed to load months: {error}
-          </p>
-        ) : null}
-
-        <div style={{ display: "grid", gap: 8 }}>
-          {months.length ? (
-            months.map((m) => {
-              const active = m.slug === activeMonth;
-              return (
-                <Link
-                  key={m.slug}
-                  href={`/staff/${m.slug}`}
-                  style={{
-                    padding: "10px 12px",
-                    borderRadius: 12,
-                    border: "1px solid #eee",
-                    background: active ? "#fff" : "#f7f7f7",
-                    textDecoration: "none",
-                    color: "#111",
-                    fontWeight: active ? 600 : 400,
-                  }}
-                >
-                  {m.label}
-                </Link>
-              );
-            })
-          ) : (
-            <p style={{ fontSize: 13, opacity: 0.75 }}>
-              No months available yet.
+          {error ? (
+            <p style={{ color: "crimson", fontSize: 13 }}>
+              Failed to load months: {error}
             </p>
-          )}
+          ) : null}
+
+          <div style={{ display: "grid", gap: 8 }}>
+            {months.length ? (
+              months.map((m) => {
+                const active = m.slug === activeMonth;
+                return (
+                  <Link
+                    key={m.slug}
+                    href={`/staff/${m.slug}`}
+                    style={{
+                      padding: "10px 12px",
+                      borderRadius: 12,
+                      border: "1px solid #eee",
+                      background: active ? "#fff" : "#f7f7f7",
+                      textDecoration: "none",
+                      color: "#111",
+                      fontWeight: active ? 600 : 400,
+                    }}
+                  >
+                    {m.label}
+                  </Link>
+                );
+              })
+            ) : (
+              <p style={{ fontSize: 13, opacity: 0.75 }}>
+                No months available yet.
+              </p>
+            )}
+          </div>
+        </div>
+
+        <div style={{ marginTop: "auto", paddingTop: 12 }}>
+          <LogoutButton />
         </div>
       </aside>
 
@@ -106,7 +115,10 @@ export default function StaffShell({
             WebkitOverflowScrolling: "touch",
           }}
         >
-          <Link href={`/staff/${activeMonth}`} style={tabStyle(activeTab === "events")}>
+          <Link
+            href={`/staff/${activeMonth}`}
+            style={tabStyle(activeTab === "events")}
+          >
             Events
           </Link>
 
