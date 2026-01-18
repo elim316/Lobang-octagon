@@ -17,6 +17,20 @@ function getActiveTab(pathname: string) {
   return "events";
 }
 
+const ui = {
+  pageBg: "#f6f7fb",
+  panelBg: "#ffffff",
+  sidebarBg: "#ffffff",
+  border: "#e7e9ee",
+  text: "#111827",
+  muted: "#6b7280",
+  primary: "#1677ff",
+  primarySoft: "#eaf2ff",
+  hover: "#f3f4f6",
+  shadow: "0 10px 30px rgba(17, 24, 39, 0.06)",
+  radius: 16,
+};
+
 export default function StaffShell({
   children,
   months,
@@ -35,121 +49,204 @@ export default function StaffShell({
   const tabStyle = (isActive: boolean) => ({
     display: "inline-flex",
     alignItems: "center",
-    padding: "8px 12px",
+    gap: 8,
+    padding: "10px 12px",
     borderRadius: 12,
-    border: "1px solid #eee",
+    border: `1px solid ${ui.border}`,
     textDecoration: "none",
-    color: "#111",
-    background: isActive ? "#fff" : "#f7f7f7",
-    fontWeight: isActive ? 600 : 400,
+    color: ui.text,
+    background: isActive ? ui.panelBg : ui.hover,
+    fontWeight: isActive ? 700 : 500,
     whiteSpace: "nowrap" as const,
-    flex: "0 0 auto",
+    transition: "background 120ms ease, transform 120ms ease",
+  });
+
+  const monthItemStyle = (isActive: boolean) => ({
+    padding: "10px 12px",
+    borderRadius: 12,
+    border: `1px solid ${ui.border}`,
+    background: isActive ? ui.primarySoft : ui.panelBg,
+    textDecoration: "none",
+    color: ui.text,
+    fontWeight: isActive ? 800 : 600,
+    display: "block",
+    transition: "background 120ms ease, transform 120ms ease",
   });
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh" }}>
-      <aside
+    <div
+      style={{
+        minHeight: "100vh",
+        background: ui.pageBg,
+        padding: 14,
+        boxSizing: "border-box",
+      }}
+    >
+      <div
         style={{
-          width: 240,
-          borderRight: "1px solid #eee",
-          padding: 16,
-          background: "#fafafa",
           display: "flex",
-          flexDirection: "column",
+          minHeight: "calc(100vh - 28px)",
+          borderRadius: ui.radius,
+          overflow: "hidden",
+          border: `1px solid ${ui.border}`,
+          boxShadow: ui.shadow,
+          background: ui.panelBg,
         }}
       >
-        <div>
-          <h2 style={{ margin: "0 0 12px 0" }}>STAFF</h2>
+        {/* Sidebar */}
+        <aside
+          style={{
+            width: 260,
+            borderRight: `1px solid ${ui.border}`,
+            padding: 16,
+            background: ui.sidebarBg,
+            display: "flex",
+            flexDirection: "column",
+            gap: 14,
+          }}
+        >
+          <div>
+            <div style={{ fontSize: 12, fontWeight: 800, color: ui.muted }}>
+              DASHBOARD
+            </div>
+            <div style={{ marginTop: 6, fontSize: 20, fontWeight: 900, color: ui.text }}>
+              Staff
+            </div>
+            <div style={{ marginTop: 6, fontSize: 13, color: ui.muted, lineHeight: 1.4 }}>
+              Manage monthly events, volunteer coverage, and exports.
+            </div>
+          </div>
 
           {error ? (
-            <p style={{ color: "crimson", fontSize: 13 }}>
+            <div
+              style={{
+                padding: 10,
+                borderRadius: 12,
+                border: `1px solid ${ui.border}`,
+                background: "#fff5f5",
+                color: "#b42318",
+                fontSize: 13,
+              }}
+            >
               Failed to load months: {error}
-            </p>
+            </div>
           ) : null}
 
           <div style={{ display: "grid", gap: 8 }}>
+            <div style={{ fontSize: 12, fontWeight: 800, color: ui.muted }}>
+              MONTHS
+            </div>
+
             {months.length ? (
-              months.map((m) => {
-                const active = m.slug === activeMonth;
-                return (
-                  <Link
-                    key={m.slug}
-                    href={`/staff/${m.slug}`}
-                    style={{
-                      padding: "10px 12px",
-                      borderRadius: 12,
-                      border: "1px solid #eee",
-                      background: active ? "#fff" : "#f7f7f7",
-                      textDecoration: "none",
-                      color: "#111",
-                      fontWeight: active ? 600 : 400,
-                    }}
-                  >
-                    {m.label}
-                  </Link>
-                );
-              })
+              <div style={{ display: "grid", gap: 8 }}>
+                {months.map((m) => {
+                  const active = m.slug === activeMonth;
+                  return (
+                    <Link
+                      key={m.slug}
+                      href={`/staff/${m.slug}`}
+                      style={monthItemStyle(active)}
+                      onMouseEnter={(e) => {
+                        (e.currentTarget as HTMLAnchorElement).style.transform = "translateY(-1px)";
+                        (e.currentTarget as HTMLAnchorElement).style.background = active
+                          ? ui.primarySoft
+                          : ui.hover;
+                      }}
+                      onMouseLeave={(e) => {
+                        (e.currentTarget as HTMLAnchorElement).style.transform = "translateY(0px)";
+                        (e.currentTarget as HTMLAnchorElement).style.background = active
+                          ? ui.primarySoft
+                          : ui.panelBg;
+                      }}
+                    >
+                      {m.label}
+                    </Link>
+                  );
+                })}
+              </div>
             ) : (
-              <p style={{ fontSize: 13, opacity: 0.75 }}>
+              <p style={{ fontSize: 13, color: ui.muted, margin: 0 }}>
                 No months available yet.
               </p>
             )}
           </div>
-        </div>
 
-        <div style={{ marginTop: "auto", paddingTop: 12 }}>
-          <LogoutButton />
-        </div>
-      </aside>
+          <div style={{ marginTop: "auto", paddingTop: 10 }}>
+            <LogoutButton />
+          </div>
+        </aside>
 
-      <main style={{ flex: 1, padding: 16 }}>
-        {/* Tabs */}
-        <div
-          style={{
-            display: "flex",
-            gap: 10,
-            marginBottom: 16,
-            flexWrap: "nowrap",
-            alignItems: "center",
-            overflowX: "auto",
-            WebkitOverflowScrolling: "touch",
-          }}
-        >
-          <Link
-            href={`/staff/${activeMonth}`}
-            style={tabStyle(activeTab === "events")}
+        {/* Main */}
+        <main style={{ flex: 1, padding: 16 }}>
+          {/* Tabs */}
+          <div
+            style={{
+              display: "flex",
+              gap: 10,
+              marginBottom: 14,
+              flexWrap: "wrap",
+              alignItems: "center",
+            }}
           >
-            Events
-          </Link>
+            <Link
+              href={`/staff/${activeMonth}`}
+              style={tabStyle(activeTab === "events")}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLAnchorElement).style.transform = "translateY(-1px)";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLAnchorElement).style.transform = "translateY(0px)";
+              }}
+            >
+              Events
+            </Link>
 
-          <Link
-            href={`/staff/${activeMonth}/data`}
-            style={tabStyle(activeTab === "data")}
+            <Link
+              href={`/staff/${activeMonth}/data`}
+              style={tabStyle(activeTab === "data")}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLAnchorElement).style.transform = "translateY(-1px)";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLAnchorElement).style.transform = "translateY(0px)";
+              }}
+            >
+              Data
+            </Link>
+
+            <Link
+              href={`/staff/${activeMonth}/calendar`}
+              style={tabStyle(activeTab === "calendar")}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLAnchorElement).style.transform = "translateY(-1px)";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLAnchorElement).style.transform = "translateY(0px)";
+              }}
+            >
+              Calendar
+            </Link>
+
+            <div style={{ marginLeft: "auto", fontSize: 13, color: ui.muted }}>
+              Viewing: <span style={{ fontWeight: 800, color: ui.text }}>{activeMonth}</span>
+            </div>
+          </div>
+
+          {/* Content card */}
+          <div
+            style={{
+              border: `1px solid ${ui.border}`,
+              borderRadius: ui.radius,
+              padding: 16,
+              minHeight: 420,
+              background: ui.panelBg,
+              boxShadow: "0 6px 18px rgba(17, 24, 39, 0.05)",
+            }}
           >
-            Data
-          </Link>
-
-          <Link
-            href={`/staff/${activeMonth}/calendar`}
-            style={tabStyle(activeTab === "calendar")}
-          >
-            Calendar
-          </Link>
-        </div>
-
-        {/* Content */}
-        <div
-          style={{
-            border: "1px solid #eee",
-            borderRadius: 16,
-            padding: 16,
-            minHeight: 400,
-            background: "#fff",
-          }}
-        >
-          {children}
-        </div>
-      </main>
+            {children}
+          </div>
+        </main>
+      </div>
     </div>
   );
 }
