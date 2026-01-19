@@ -1,6 +1,12 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
+type FunctionResponse = {
+  success: boolean;
+  error?: string;
+  message?: string;
+};
+
 export async function POST(
   req: Request,
   ctx: { params: Promise<{ month: string }> }
@@ -29,25 +35,24 @@ export async function POST(
     return NextResponse.json({ error: "event_id is required" }, { status: 400 });
   }
 
-  // Check if already signed up
-  const { data: existing } = await supabase
-    .from("event_volunteers")
-    .select("event_id")
-    .eq("event_id", event_id)
-    .eq("volunteer_user_id", user.id)
-    .single();
+  // Use PostgreSQL function to sign up
+  const { data: result, error: rpcError } = await supabase.rpc("volunteer_signup", {
+    p_event_id: event_id,
+  });
 
-  if (existing) {
-    return NextResponse.json({ error: "Already signed up for this event" }, { status: 400 });
+  if (rpcError) {
+    return NextResponse.json({ error: rpcError.message }, { status: 500 });
   }
 
-  // Insert signup
-  const { error: insertError } = await supabase
-    .from("event_volunteers")
-    .insert({ event_id, volunteer_user_id: user.id });
+  const response = result as FunctionResponse;
 
-  if (insertError) {
-    return NextResponse.json({ error: insertError.message }, { status: 500 });
+  if (!response.success) {
+    const status = response.error?.includes("Not authenticated")
+      ? 401
+      : response.error?.includes("does not exist") || response.error?.includes("Already signed up")
+      ? 400
+      : 500;
+    return NextResponse.json({ error: response.error || "Failed to sign up" }, { status });
   }
 
   return NextResponse.json({ success: true });
@@ -81,15 +86,26 @@ export async function DELETE(
     return NextResponse.json({ error: "event_id is required" }, { status: 400 });
   }
 
-  // Delete signup
-  const { error: deleteError } = await supabase
-    .from("event_volunteers")
-    .delete()
-    .eq("event_id", event_id)
-    .eq("volunteer_user_id", user.id);
+  // Use PostgreSQL function to unsignup
+  const { data: result, error: rpcError } = await supabase.rpc("volunteer_unsignup", {
+    p_event_id: event_id,
+  });
 
-  if (deleteError) {
-    return NextResponse.json({ error: deleteError.message }, { status: 500 });
+  if (rpcError) {
+    return NextResponse.json({ error: rpcError.message }, { status: 500 });
+  }
+
+  const response = result as FunctionResponse;
+
+  if (!response.success) {
+    const status = response.error?.includes("Not authenticated")
+      ? 401
+      : response.error?.includes("not signed up")
+      ? 400
+      : response.error?.includes("protected by database policies")
+      ? 403
+      : 500;
+    return NextResponse.json({ error: response.error || "Failed to cancel signup" }, { status });
   }
 
   return NextResponse.json({ success: true });

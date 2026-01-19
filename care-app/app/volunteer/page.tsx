@@ -5,21 +5,13 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 export default async function VolunteerIndex() {
   const supabase = await createSupabaseServerClient();
 
-  const { data, error } = await supabase
-    .from("Events")
-    .select('"Date and Time"')
-    .order('"Date and Time"', { ascending: false })
-    .limit(1);
+  // Use PostgreSQL function to get latest event month
+  const { data: monthSlug, error } = await supabase.rpc("get_latest_event_month");
 
   // If query fails or there are no events, pick a safe fallback
-  if (error || !data?.length || !data[0]["Date and Time"]) {
+  if (error || !monthSlug) {
     redirect("/volunteer/2026-01");
   }
 
-  const d = new Date(data[0]["Date and Time"]);
-  const y = d.getUTCFullYear();
-  const m = String(d.getUTCMonth() + 1).padStart(2, "0");
-  const slug = `${y}-${m}`;
-
-  redirect(`/volunteer/${slug}`);
+  redirect(`/volunteer/${monthSlug}`);
 }

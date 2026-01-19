@@ -11,33 +11,13 @@ export function monthLabelFromSlug(slug: string): string {
 export async function fetchAvailableMonths(
   supabase: SupabaseClient
 ): Promise<MonthItem[]> {
-  // Pull all event datetimes, then distill distinct months in JS.
-  // This avoids PostgREST distinct/group-by quirks and handles your spaced column name.
-  const { data, error } = await supabase
-    .from("Events")
-    .select('"Date and Time"')
-    .order('"Date and Time"', { ascending: true });
+  // Use PostgreSQL function to get available months
+  const { data, error } = await supabase.rpc("get_available_months");
 
   if (error) {
     return [];
   }
 
-  const monthSet = new Set<string>();
-
-  for (const row of data ?? []) {
-    const iso = row["Date and Time"] as string | null;
-    if (!iso) continue;
-
-    const d = new Date(iso);
-    const y = d.getUTCFullYear();
-    const m = String(d.getUTCMonth() + 1).padStart(2, "0");
-    monthSet.add(`${y}-${m}`);
-  }
-
-  const months: MonthItem[] = Array.from(monthSet)
-    .sort()
-    .map((slug) => ({ slug, label: monthLabelFromSlug(slug) }))
-    .reverse();
-
-  return months;
+  // Function returns array of { slug, label } objects
+  return (data as MonthItem[]) ?? [];
 }

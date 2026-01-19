@@ -8,8 +8,20 @@ function monthRange(monthSlug: string) {
   const m = Number(mStr);
   const start = new Date(Date.UTC(y, m - 1, 1, 0, 0, 0));
   const end = new Date(Date.UTC(y, m, 1, 0, 0, 0));
-  return { startISO: start.toISOString(), endISO: end.toISOString() };
+  return { startISO: start.toISOString(), endISO: end.toISOString(), start, end };
 }
+
+type EventWithSignupInfo = {
+  id: number;
+  Name: string;
+  "Event Type": string | null;
+  "No. of people": number | null;
+  "Date and Time": string;
+  Duration: number | null;
+  signup_count: number;
+  is_signed_up: boolean;
+  is_full: boolean;
+};
 
 export default async function VolunteerMonthPage({
   params,
@@ -17,35 +29,9 @@ export default async function VolunteerMonthPage({
   params: Promise<{ month: string }>;
 }) {
   const { month } = await params;
-  const { startISO, endISO } = monthRange(month);
+  const { start, end } = monthRange(month);
 
   const supabase = await createSupabaseServerClient();
-
-  // Fetch events for the month
-  const { data: events, error: eventsError } = await supabase
-    .from("Events")
-    .select(
-      `
-      id,
-      Name,
-      "Event Type",
-      "No. of people",
-      "Date and Time",
-      Duration
-    `
-    )
-    .gte("Date and Time", startISO)
-    .lt("Date and Time", endISO)
-    .order("Date and Time", { ascending: true });
-
-  if (eventsError) {
-    return (
-      <div>
-        <h3 style={{ marginTop: 0 }}>Events for {month}</h3>
-        <p style={{ color: "crimson" }}>Failed to load events: {eventsError.message}</p>
-      </div>
-    );
-  }
 
   // Get current user
   const { data: { user } } = await supabase.auth.getUser();
@@ -59,69 +45,46 @@ export default async function VolunteerMonthPage({
     );
   }
 
-  // Fetch user's signups for these events
-  const eventIds = (events ?? []).map((e) => e.id);
-  const { data: signups, error: signupsError } = await supabase
-    .from("event_volunteers")
-    .select("event_id")
-    .eq("volunteer_user_id", user.id)
-    .in("event_id", eventIds.length ? eventIds : [0]);
+  // Fetch events using PostgreSQL function
+  const { data: eventsData, error: eventsError } = await supabase.rpc(
+    "get_events_for_month",
+    {
+      month_slug: month,
+      user_id: user.id,
+    }
+  );
 
-  if (signupsError) {
+  if (eventsError) {
     return (
       <div>
         <h3 style={{ marginTop: 0 }}>Events for {month}</h3>
-        <p style={{ color: "crimson" }}>Failed to load signups: {signupsError.message}</p>
+        <p style={{ color: "crimson" }}>Failed to load events: {eventsError.message}</p>
       </div>
     );
   }
 
-  // Create set of event IDs user has signed up for
-  const signedUpEventIds = new Set((signups ?? []).map((s) => s.event_id));
+  const events: EventWithSignupInfo[] = (eventsData as EventWithSignupInfo[]) ?? [];
 
-  // Fetch signup counts for all events (to show current signups vs needed)
-  const { data: allSignups, error: allSignupsError } = await supabase
-    .from("event_volunteers")
-    .select("event_id")
-    .in("event_id", eventIds.length ? eventIds : [0]);
-
-  if (allSignupsError) {
-    return (
-      <div>
-        <h3 style={{ marginTop: 0 }}>Events for {month}</h3>
-        <p style={{ color: "crimson" }}>Failed to load signup counts: {allSignupsError.message}</p>
-      </div>
-    );
-  }
-
-  // Count signups per event
-  const signupCounts = new Map<number, number>();
-  for (const s of allSignups ?? []) {
-    signupCounts.set(s.event_id, (signupCounts.get(s.event_id) ?? 0) + 1);
+  // Extract signed up event IDs and signup counts
+  const signedUpEventIds = events.filter((e) => e.is_signed_up).map((e) => e.id);
+  const signupCounts: Record<number, number> = {};
+  for (const e of events) {
+    signupCounts[e.id] = e.signup_count;
   }
 
   // Extract unique event types for filter
   const eventTypes = Array.from(
-    new Set((events ?? []).map((e) => e["Event Type"]).filter(Boolean))
+    new Set(events.map((e) => e["Event Type"]).filter(Boolean))
   ) as string[];
-
-  const { start, end } = (() => {
-    const [yStr, mStr] = month.split("-");
-    const y = Number(yStr);
-    const m = Number(mStr);
-    const start = new Date(Date.UTC(y, m - 1, 1, 0, 0, 0));
-    const end = new Date(Date.UTC(y, m, 1, 0, 0, 0));
-    return { start, end };
-  })();
 
   // Fetch available months for the month selector
   const months = await fetchAvailableMonths(supabase);
 
   return (
     <EventCards
-      events={events ?? []}
-      signedUpEventIds={Array.from(signedUpEventIds)}
-      signupCounts={Object.fromEntries(signupCounts)}
+      events={events}
+      signedUpEventIds={signedUpEventIds}
+      signupCounts={signupCounts}
       eventTypes={eventTypes}
       month={month}
       monthStart={start.toISOString()}
