@@ -1,0 +1,16 @@
+# System files
+.DS_Store
+
+# Editor files
+.vscode
+.idea
+.cursor
+.cursorrules
+.cursorindex
+.cursorindexingignore
+.cursorindexingrules
+.cursorindexingignore
+.specstory
+
+# Working files
+project.md
