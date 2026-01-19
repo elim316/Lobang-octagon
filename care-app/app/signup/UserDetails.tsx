@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Input from "@/app/components/ui/Input";
+import Button from "@/app/components/ui/Button";
+import { designSystem } from "@/lib/ui/design-system";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 interface DetailsProps {
@@ -33,7 +36,6 @@ export default function UserDetails({ userId }: DetailsProps) {
     setLoading(true);
     const supabase = createSupabaseBrowserClient();
 
-
     const { error } = await supabase
       .from("profiles")
       .update({
@@ -55,26 +57,39 @@ export default function UserDetails({ userId }: DetailsProps) {
   };
 
   return (
-    <div style={{ display: "grid", gap: 20 }}>
-      <h2 style={{ fontWeight: 500, margin: 0 }}>Tell us more about yourself.</h2>
+    <div style={{ display: "grid", gap: designSystem.spacing.xl }}>
+      <h2 style={{ 
+        fontWeight: designSystem.typography.fontWeight.medium, 
+        margin: 0,
+        fontSize: designSystem.typography.fontSize.h2,
+        color: designSystem.colors.text.primary
+      }}>
+        Tell us more about yourself.
+      </h2>
 
-      <div style={{ display: "grid", gap: 12 }}>
-        <input
+      <div style={{ display: "grid", gap: designSystem.spacing.md }}>
+        <Input
+          id="fullName"
           placeholder="Full Name"
           value={fullName}
           onChange={(e) => setFullName(e.target.value)}
-          style={{ padding: 16, borderRadius: 12, border: "2px solid #111", fontSize: "1rem" }}
+          aria-label="Full Name"
         />
         
         {/* Interests Section */}
-        <div style={{ marginTop: 10 }}>
-          <p style={{ fontWeight: 600, marginBottom: 12, fontSize: "0.9rem" }}>
+        <div style={{ marginTop: designSystem.spacing.md }}>
+          <p style={{ 
+            fontWeight: designSystem.typography.fontWeight.semibold, 
+            marginBottom: designSystem.spacing.md, 
+            fontSize: designSystem.typography.fontSize.bodySmall,
+            color: designSystem.colors.text.primary
+          }}>
             I am interested in (Select one):
           </p>
           <div style={{ 
             display: "grid", 
             gridTemplateColumns: "1fr 1fr", 
-            gap: 10 
+            gap: designSystem.spacing.md 
           }}>
             {options.map((option) => {
               const isSelected = selectedInterest === option;
@@ -84,16 +99,15 @@ export default function UserDetails({ userId }: DetailsProps) {
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    gap: 10,
-                    padding: "12px",
-                    borderRadius: 10,
-                    border: "2px solid #111",
+                    gap: designSystem.spacing.md,
+                    padding: designSystem.spacing.md,
+                    borderRadius: designSystem.borderRadius.md,
+                    border: `2px solid ${designSystem.colors.text.primary}`,
                     cursor: "pointer",
-                    background: isSelected ? "#f0f0f0" : "#fff",
-                    transition: "all 0.1s ease",
-                    fontSize: "0.9rem",
-                    fontWeight: 500,
-                    // Subtle highlight for selected item
+                    background: isSelected ? designSystem.colors.hover : designSystem.colors.surface,
+                    transition: `all ${designSystem.transitions.fast}`,
+                    fontSize: designSystem.typography.fontSize.bodySmall,
+                    fontWeight: designSystem.typography.fontWeight.medium,
                     boxShadow: isSelected ? "inset 0 0 0 1px #111" : "none"
                   }}
                 >
@@ -101,11 +115,12 @@ export default function UserDetails({ userId }: DetailsProps) {
                     type="checkbox"
                     checked={isSelected}
                     onChange={() => toggleInterest(option)}
+                    aria-label={option}
                     style={{ 
                       width: 18, 
                       height: 18, 
                       cursor: "pointer",
-                      accentColor: "#111" 
+                      accentColor: designSystem.colors.primary
                     }}
                   />
                   {option}
@@ -121,35 +136,26 @@ export default function UserDetails({ userId }: DetailsProps) {
           onChange={(e) => setBio(e.target.value)}
           rows={3}
           style={{ 
-            padding: 16, 
-            borderRadius: 12, 
-            border: "2px solid #111", 
-            fontSize: "1rem", 
+            padding: designSystem.spacing.lg, 
+            borderRadius: designSystem.borderRadius.md, 
+            border: `2px solid ${designSystem.colors.text.primary}`, 
+            fontSize: designSystem.typography.fontSize.body, 
             resize: "none",
-            fontFamily: "inherit",
-            marginTop: 10
+            fontFamily: designSystem.typography.fontFamily.sans,
+            marginTop: designSystem.spacing.md
           }}
+          aria-label="About you"
         />
       </div>
 
-      <button
+      <Button
         onClick={handleFinish}
         disabled={loading || !selectedInterest}
-        style={{
-          padding: 16,
-          borderRadius: 12,
-          background: loading ? "#666" : "#111",
-          color: "#fff",
-          border: "none",
-          fontWeight: 600,
-          cursor: loading ? "not-allowed" : "pointer",
-          fontSize: "1rem",
-          marginTop: 10,
-          transition: "opacity 0.2s"
-        }}
+        size="lg"
+        style={{ marginTop: designSystem.spacing.md }}
       >
         {loading ? "Saving..." : "Finish Setup"}
-      </button>
+      </Button>
     </div>
   );
 }

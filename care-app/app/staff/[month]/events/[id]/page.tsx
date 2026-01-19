@@ -1,6 +1,9 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import Card from "@/app/components/ui/Card";
+import Button from "@/app/components/ui/Button";
+import { designSystem } from "@/lib/ui/design-system";
 
 function fmtDateTime(isoOrDate: string) {
   const d = new Date(isoOrDate);
@@ -41,24 +44,60 @@ export default async function StaffEventDetailPage({
   const endText = fmtDateTime(endIso);
 
   return (
-    <div style={{ display: "grid", gap: 10 }}>
-      <Link href={`/staff/${month}`} style={{ textDecoration: "none" }}>
-        ← Back
+    <div style={{ display: "grid", gap: designSystem.spacing.md }}>
+      <Link 
+        href={`/staff/${month}`} 
+        style={{ textDecoration: "none" }}
+      >
+        <Button variant="tertiary" size="sm">
+          ← Back
+        </Button>
       </Link>
 
-      <div style={{ fontSize: 22, fontWeight: 700 }}>{event.name}</div>
+      <Card>
+        <div style={{ 
+          fontSize: designSystem.typography.fontSize.h2, 
+          fontWeight: designSystem.typography.fontWeight.bold,
+          color: designSystem.colors.text.primary,
+          marginBottom: designSystem.spacing.md
+        }}>
+          {event.name}
+        </div>
 
-      <div style={{ opacity: 0.85 }}>{event.event_type ?? "Uncategorised"}</div>
+        <div style={{ 
+          opacity: 0.85,
+          fontSize: designSystem.typography.fontSize.body,
+          color: designSystem.colors.text.secondary,
+          marginBottom: designSystem.spacing.sm
+        }}>
+          {event.event_type ?? "Uncategorised"}
+        </div>
 
-      <div>
-        Time: {startText} to {endText}
-      </div>
+        <div style={{ 
+          fontSize: designSystem.typography.fontSize.bodySmall,
+          color: designSystem.colors.text.primary,
+          marginBottom: designSystem.spacing.sm
+        }}>
+          Time: {startText} to {endText}
+        </div>
 
-      <div>Needed: {event.no_of_people ?? 0}</div>
+        <div style={{ 
+          fontSize: designSystem.typography.fontSize.bodySmall,
+          color: designSystem.colors.text.primary,
+          marginBottom: designSystem.spacing.sm
+        }}>
+          Needed: {event.no_of_people ?? 0}
+        </div>
 
-      <div style={{ marginTop: 8, opacity: 0.85 }}>
-        Next: we will show volunteers signed up and whether this event is fully covered.
-      </div>
+        <div style={{ 
+          marginTop: designSystem.spacing.sm, 
+          opacity: 0.85,
+          fontSize: designSystem.typography.fontSize.bodySmall,
+          color: designSystem.colors.text.secondary
+        }}>
+          Next: we will show volunteers signed up and whether this event is fully covered.
+        </div>
+      </Card>
     </div>
   );
 }

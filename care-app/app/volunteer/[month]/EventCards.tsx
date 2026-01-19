@@ -5,6 +5,10 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Calendar, List } from "lucide-react";
 import { type MonthItem } from "@/lib/utils/months";
+import Card from "@/app/components/ui/Card";
+import Button from "@/app/components/ui/Button";
+import Badge from "@/app/components/ui/Badge";
+import { designSystem } from "@/lib/ui/design-system";
 
 type Event = {
   id: number;
@@ -57,19 +61,6 @@ function ymdUTC(d: Date) {
 function weekdayIndexSun0(d: Date) {
   return d.getUTCDay();
 }
-
-const ui = {
-  pageBg: "#f6f7fb",
-  panelBg: "#ffffff",
-  border: "#e7e9ee",
-  text: "#111827",
-  muted: "#6b7280",
-  primary: "#1677ff",
-  primarySoft: "#eaf2ff",
-  hover: "#f3f4f6",
-  shadow: "0 10px 30px rgba(17, 24, 39, 0.06)",
-  radius: 16,
-};
 
 export default function EventCards({
   events,
@@ -218,24 +209,25 @@ export default function EventCards({
               onClick={() => setIsMonthDropdownOpen(!isMonthDropdownOpen)}
               style={{
                 padding: "10px 12px",
-                borderRadius: 12,
-                border: `1px solid ${ui.border}`,
-                background: ui.panelBg,
+                borderRadius: designSystem.borderRadius.md,
+                border: `1px solid ${designSystem.colors.border}`,
+                background: designSystem.colors.surface,
                 cursor: "pointer",
-                fontWeight: 600,
-                fontSize: 14,
-                color: ui.text,
+                fontWeight: designSystem.typography.fontWeight.semibold,
+                fontSize: designSystem.typography.fontSize.bodySmall,
+                color: designSystem.colors.text.primary,
                 display: "flex",
                 alignItems: "center",
-                gap: 8,
-                transition: "background 120ms ease",
+                gap: designSystem.spacing.sm,
+                transition: `background ${designSystem.transitions.fast}`,
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = ui.hover;
+                e.currentTarget.style.background = designSystem.colors.hover;
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.background = ui.panelBg;
+                e.currentTarget.style.background = designSystem.colors.surface;
               }}
+              aria-label="Select month"
             >
               {currentMonthLabel}
               <span style={{ fontSize: 12, opacity: 0.7 }}>▼</span>
@@ -247,16 +239,16 @@ export default function EventCards({
                   position: "absolute",
                   top: "100%",
                   left: 0,
-                  marginTop: 8,
-                  background: ui.panelBg,
-                  border: `1px solid ${ui.border}`,
-                  borderRadius: 12,
-                  boxShadow: ui.shadow,
-                  padding: 8,
+                  marginTop: designSystem.spacing.sm,
+                  background: designSystem.colors.surface,
+                  border: `1px solid ${designSystem.colors.border}`,
+                  borderRadius: designSystem.borderRadius.md,
+                  boxShadow: designSystem.shadows.lg,
+                  padding: designSystem.spacing.sm,
                   minWidth: 200,
                   zIndex: 1000,
                   display: "grid",
-                  gap: 4,
+                  gap: designSystem.spacing.xs,
                 }}
               >
                 {months.map((m) => {
@@ -268,20 +260,21 @@ export default function EventCards({
                       onClick={() => setIsMonthDropdownOpen(false)}
                       style={{
                         padding: "8px 12px",
-                        borderRadius: 8,
+                        borderRadius: designSystem.borderRadius.sm,
                         border: "none",
-                        background: isActive ? ui.primarySoft : "transparent",
+                        background: isActive ? designSystem.colors.primarySoft : "transparent",
                         cursor: "pointer",
                         textAlign: "left",
-                        fontWeight: isActive ? 700 : 500,
-                        fontSize: 14,
-                        color: ui.text,
+                        fontWeight: isActive ? designSystem.typography.fontWeight.bold : designSystem.typography.fontWeight.medium,
+                        fontSize: designSystem.typography.fontSize.bodySmall,
+                        color: designSystem.colors.text.primary,
                         textDecoration: "none",
-                        transition: "background 120ms ease",
+                        transition: `background ${designSystem.transitions.fast}`,
                       }}
+                      aria-current={isActive ? "page" : undefined}
                       onMouseEnter={(e) => {
                         if (!isActive) {
-                          e.currentTarget.style.background = ui.hover;
+                          e.currentTarget.style.background = designSystem.colors.hover;
                         }
                       }}
                       onMouseLeave={(e) => {
@@ -304,27 +297,29 @@ export default function EventCards({
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
             style={{
               padding: "10px 12px",
-              borderRadius: 12,
-              border: `1px solid ${ui.border}`,
-              background: ui.panelBg,
+              borderRadius: designSystem.borderRadius.md,
+              border: `1px solid ${designSystem.colors.border}`,
+              background: designSystem.colors.surface,
               cursor: "pointer",
-              fontWeight: 600,
-              fontSize: 14,
-              color: ui.text,
+              fontWeight: designSystem.typography.fontWeight.semibold,
+              fontSize: designSystem.typography.fontSize.bodySmall,
+              color: designSystem.colors.text.primary,
               display: "flex",
               alignItems: "center",
-              gap: 8,
-              transition: "background 120ms ease",
+              gap: designSystem.spacing.sm,
+              transition: `background ${designSystem.transitions.fast}`,
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = ui.hover;
+              e.currentTarget.style.background = designSystem.colors.hover;
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = ui.panelBg;
+              e.currentTarget.style.background = designSystem.colors.surface;
             }}
+            aria-label="Filter events"
+            aria-expanded={isDropdownOpen}
           >
             Filter
-            <span style={{ fontSize: 12, opacity: 0.7 }}>▼</span>
+            <span style={{ fontSize: designSystem.typography.fontSize.caption, opacity: 0.7 }}>▼</span>
           </button>
 
           {isDropdownOpen && (
@@ -333,17 +328,18 @@ export default function EventCards({
                 position: "absolute",
                 top: "100%",
                 left: 0,
-                marginTop: 8,
-                background: ui.panelBg,
-                border: `1px solid ${ui.border}`,
-                borderRadius: 12,
-                boxShadow: ui.shadow,
-                padding: 8,
+                marginTop: designSystem.spacing.sm,
+                background: designSystem.colors.surface,
+                border: `1px solid ${designSystem.colors.border}`,
+                borderRadius: designSystem.borderRadius.md,
+                boxShadow: designSystem.shadows.lg,
+                padding: designSystem.spacing.sm,
                 minWidth: 200,
                 zIndex: 1000,
                 display: "grid",
-                gap: 4,
+                gap: designSystem.spacing.xs,
               }}
+              role="menu"
             >
               <button
                 onClick={() => {
@@ -352,19 +348,20 @@ export default function EventCards({
                 }}
                 style={{
                   padding: "8px 12px",
-                  borderRadius: 8,
+                  borderRadius: designSystem.borderRadius.sm,
                   border: "none",
-                  background: selectedFilter === null ? ui.primarySoft : "transparent",
+                  background: selectedFilter === null ? designSystem.colors.primarySoft : "transparent",
                   cursor: "pointer",
                   textAlign: "left",
-                  fontWeight: selectedFilter === null ? 700 : 500,
-                  fontSize: 14,
-                  color: ui.text,
-                  transition: "background 120ms ease",
+                  fontWeight: selectedFilter === null ? designSystem.typography.fontWeight.bold : designSystem.typography.fontWeight.medium,
+                  fontSize: designSystem.typography.fontSize.bodySmall,
+                  color: designSystem.colors.text.primary,
+                  transition: `background ${designSystem.transitions.fast}`,
                 }}
+                role="menuitem"
                 onMouseEnter={(e) => {
                   if (selectedFilter !== null) {
-                    e.currentTarget.style.background = ui.hover;
+                    e.currentTarget.style.background = designSystem.colors.hover;
                   }
                 }}
                 onMouseLeave={(e) => {
@@ -384,19 +381,20 @@ export default function EventCards({
                   }}
                   style={{
                     padding: "8px 12px",
-                    borderRadius: 8,
+                    borderRadius: designSystem.borderRadius.sm,
                     border: "none",
-                    background: selectedFilter === type ? ui.primarySoft : "transparent",
+                    background: selectedFilter === type ? designSystem.colors.primarySoft : "transparent",
                     cursor: "pointer",
                     textAlign: "left",
-                    fontWeight: selectedFilter === type ? 700 : 500,
-                    fontSize: 14,
-                    color: ui.text,
-                    transition: "background 120ms ease",
+                    fontWeight: selectedFilter === type ? designSystem.typography.fontWeight.bold : designSystem.typography.fontWeight.medium,
+                    fontSize: designSystem.typography.fontSize.bodySmall,
+                    color: designSystem.colors.text.primary,
+                    transition: `background ${designSystem.transitions.fast}`,
                   }}
+                  role="menuitem"
                   onMouseEnter={(e) => {
                     if (selectedFilter !== type) {
-                      e.currentTarget.style.background = ui.hover;
+                      e.currentTarget.style.background = designSystem.colors.hover;
                     }
                   }}
                   onMouseLeave={(e) => {
@@ -413,18 +411,18 @@ export default function EventCards({
           </div>
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <div style={{ fontSize: 13, color: ui.muted }}>
+        <div style={{ display: "flex", alignItems: "center", gap: designSystem.spacing.md }}>
+          <div style={{ fontSize: designSystem.typography.fontSize.bodySmall, color: designSystem.colors.text.secondary }}>
             {filteredEvents.length} {filteredEvents.length === 1 ? "event" : "events"}
           </div>
 
           {/* View Selector */}
           <div
             style={{
-              border: `1px solid ${ui.border}`,
-              borderRadius: 12,
-              padding: 4,
-              background: ui.panelBg,
+              border: `1px solid ${designSystem.colors.border}`,
+              borderRadius: designSystem.borderRadius.md,
+              padding: designSystem.spacing.xs,
+              background: designSystem.colors.surface,
             }}
           >
             {/* Single View Selector Button */}
@@ -453,11 +451,12 @@ export default function EventCards({
                 transition: "background 120ms ease",
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = ui.hover;
+                e.currentTarget.style.background = designSystem.colors.hover;
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.background = "transparent";
               }}
+              aria-label={`Switch to ${viewMode === "calendar" ? "card" : "calendar"} view`}
             >
               {/* Left section - Calendar icon */}
               <div
@@ -468,22 +467,22 @@ export default function EventCards({
                   justifyContent: "center",
                   borderTop: `${
                     viewMode === "calendar" ? "2px" : "1px"
-                  } solid ${ui.border}`,
+                  } solid ${designSystem.colors.border}`,
                   borderBottom: `${
                     viewMode === "calendar" ? "2px" : "1px"
-                  } solid ${ui.border}`,
+                  } solid ${designSystem.colors.border}`,
                   borderLeft: `${
                     viewMode === "calendar" ? "2px" : "1px"
-                  } solid ${ui.border}`,
-                  borderRight: `1px solid ${ui.border}`,
+                  } solid ${designSystem.colors.border}`,
+                  borderRight: `1px solid ${designSystem.colors.border}`,
                   borderRadius: "8px 0 0 8px",
-                  background: viewMode === "calendar" ? ui.primarySoft : "transparent",
+                  background: viewMode === "calendar" ? designSystem.colors.primarySoft : "transparent",
                 }}
               >
                 <Calendar
                   size={18}
                   style={{
-                    color: viewMode === "calendar" ? ui.text : ui.muted,
+                    color: viewMode === "calendar" ? designSystem.colors.text.primary : designSystem.colors.text.secondary,
                   }}
                 />
               </div>
@@ -496,22 +495,22 @@ export default function EventCards({
                   justifyContent: "center",
                   borderTop: `${
                     viewMode === "card" ? "2px" : "1px"
-                  } solid ${ui.border}`,
+                  } solid ${designSystem.colors.border}`,
                   borderBottom: `${
                     viewMode === "card" ? "2px" : "1px"
-                  } solid ${ui.border}`,
-                  borderLeft: `1px solid ${ui.border}`,
+                  } solid ${designSystem.colors.border}`,
+                  borderLeft: `1px solid ${designSystem.colors.border}`,
                   borderRight: `${
                     viewMode === "card" ? "2px" : "1px"
-                  } solid ${ui.border}`,
+                  } solid ${designSystem.colors.border}`,
                   borderRadius: "0 8px 8px 0",
-                  background: viewMode === "card" ? ui.primarySoft : "transparent",
+                  background: viewMode === "card" ? designSystem.colors.primarySoft : "transparent",
                 }}
               >
                 <List
                   size={18}
                   style={{
-                    color: viewMode === "card" ? ui.text : ui.muted,
+                    color: viewMode === "card" ? designSystem.colors.text.primary : designSystem.colors.text.secondary,
                   }}
                 />
               </div>
@@ -524,13 +523,14 @@ export default function EventCards({
       {error && (
         <div
           style={{
-            padding: 12,
-            borderRadius: 12,
-            border: `1px solid ${ui.border}`,
-            background: "#fff5f5",
-            color: "#b42318",
-            fontSize: 13,
+            padding: designSystem.spacing.md,
+            borderRadius: designSystem.borderRadius.md,
+            border: `1px solid ${designSystem.colors.border}`,
+            background: designSystem.colors.semantic.errorBg,
+            color: designSystem.colors.semantic.errorText,
+            fontSize: designSystem.typography.fontSize.bodySmall,
           }}
+          role="alert"
         >
           {error}
         </div>
@@ -540,10 +540,10 @@ export default function EventCards({
       {viewMode === "calendar" ? (
         <div
           style={{
-            border: `1px solid ${ui.border}`,
-            borderRadius: ui.radius,
+            border: `1px solid ${designSystem.colors.border}`,
+            borderRadius: designSystem.borderRadius.lg,
             overflow: "hidden",
-            background: ui.panelBg,
+            background: designSystem.colors.surface,
           }}
         >
           {/* Week header */}
@@ -551,11 +551,16 @@ export default function EventCards({
             style={{
               display: "grid",
               gridTemplateColumns: "repeat(7, 1fr)",
-              borderBottom: `1px solid ${ui.border}`,
+              borderBottom: `1px solid ${designSystem.colors.border}`,
             }}
           >
             {weekDays.map((w) => (
-              <div key={w} style={{ padding: 10, fontSize: 12, opacity: 0.75, color: ui.muted }}>
+              <div key={w} style={{ 
+                padding: 10, 
+                fontSize: designSystem.typography.fontSize.caption, 
+                opacity: 0.75, 
+                color: designSystem.colors.text.secondary 
+              }}>
                 {w}
               </div>
             ))}
@@ -573,15 +578,20 @@ export default function EventCards({
                   key={idx}
                   style={{
                     minHeight: 110,
-                    borderRight: (idx + 1) % 7 === 0 ? "none" : `1px solid ${ui.border}`,
-                    borderBottom: idx < cells.length - 7 ? `1px solid ${ui.border}` : "none",
+                    borderRight: (idx + 1) % 7 === 0 ? "none" : `1px solid ${designSystem.colors.border}`,
+                    borderBottom: idx < cells.length - 7 ? `1px solid ${designSystem.colors.border}` : "none",
                     padding: 10,
-                    background: d ? ui.panelBg : "#fafafa",
+                    background: d ? designSystem.colors.surface : designSystem.colors.background,
                   }}
                 >
                   {d ? (
                     <>
-                      <div style={{ fontSize: 12, opacity: 0.75, marginBottom: 8, color: ui.muted }}>
+                      <div style={{ 
+                        fontSize: designSystem.typography.fontSize.caption, 
+                        opacity: 0.75, 
+                        marginBottom: designSystem.spacing.sm, 
+                        color: designSystem.colors.text.secondary 
+                      }}>
                         {d.getUTCDate()}
                       </div>
 
@@ -598,10 +608,10 @@ export default function EventCards({
                               key={e.id}
                               style={{
                                 padding: "6px 8px",
-                                borderRadius: 10,
-                                border: `1px solid ${ui.border}`,
-                                fontSize: 12,
-                                background: signedUp ? "#e8fff1" : ui.panelBg,
+                                borderRadius: designSystem.borderRadius.md,
+                                border: `1px solid ${designSystem.colors.border}`,
+                                fontSize: designSystem.typography.fontSize.caption,
+                                background: signedUp ? designSystem.colors.semantic.successBg : designSystem.colors.surface,
                                 overflow: "hidden",
                                 textOverflow: "ellipsis",
                                 whiteSpace: "nowrap",
@@ -628,17 +638,18 @@ export default function EventCards({
                                   style={{
                                     padding: "4px 8px",
                                     borderRadius: 6,
-                                    border: `1px solid ${ui.border}`,
-                                    background: ui.panelBg,
+                                    border: `1px solid ${designSystem.colors.border}`,
+                                    background: designSystem.colors.surface,
                                     cursor: isLoading ? "not-allowed" : "pointer",
-                                    fontWeight: 600,
+                                    fontWeight: designSystem.typography.fontWeight.semibold,
                                     fontSize: 10,
-                                    color: "#b42318",
+                                    color: designSystem.colors.semantic.errorText,
                                     opacity: isLoading ? 0.6 : 1,
                                     whiteSpace: "nowrap",
                                     flexShrink: 0,
                                   }}
                                   title="Unsignup"
+                                  aria-label={`Unsignup from ${e.Name}`}
                                 >
                                   {isLoading ? "..." : "×"}
                                 </button>
@@ -649,17 +660,18 @@ export default function EventCards({
                                   style={{
                                     padding: "4px 8px",
                                     borderRadius: 6,
-                                    border: `1px solid ${isFull ? ui.border : ui.primary}`,
-                                    background: isFull ? ui.panelBg : ui.primary,
+                                    border: `1px solid ${isFull ? designSystem.colors.border : designSystem.colors.primary}`,
+                                    background: isFull ? designSystem.colors.surface : designSystem.colors.primary,
                                     cursor: isLoading || isFull ? "not-allowed" : "pointer",
-                                    fontWeight: 600,
+                                    fontWeight: designSystem.typography.fontWeight.semibold,
                                     fontSize: 10,
-                                    color: isFull ? ui.muted : "#ffffff",
+                                    color: isFull ? designSystem.colors.text.secondary : "#ffffff",
                                     opacity: isLoading ? 0.6 : 1,
                                     whiteSpace: "nowrap",
                                     flexShrink: 0,
                                   }}
                                   title={isFull ? "Full" : "Sign Up"}
+                                  aria-label={isFull ? `Event ${e.Name} is full` : `Sign up for ${e.Name}`}
                                 >
                                   {isLoading ? "..." : isFull ? "Full" : "+"}
                                 </button>
@@ -669,7 +681,11 @@ export default function EventCards({
                         })}
 
                         {dayEvents.length > 3 && (
-                          <div style={{ fontSize: 12, opacity: 0.7, color: ui.muted }}>
+                          <div style={{ 
+                            fontSize: designSystem.typography.fontSize.caption, 
+                            opacity: 0.7, 
+                            color: designSystem.colors.text.secondary 
+                          }}>
                             +{dayEvents.length - 3} more
                           </div>
                         )}
@@ -683,9 +699,9 @@ export default function EventCards({
         </div>
       ) : (
         /* Event Cards */
-        <div style={{ display: "grid", gap: 12 }}>
+        <div style={{ display: "grid", gap: designSystem.spacing.md }}>
           {filteredEvents.length === 0 ? (
-            <p style={{ color: ui.muted, margin: 0 }}>
+            <p style={{ color: designSystem.colors.text.secondary, margin: 0 }}>
               {selectedFilter ? `No events found for "${selectedFilter}"` : "No events found for this month."}
             </p>
           ) : (
@@ -700,114 +716,80 @@ export default function EventCards({
             const isLoading = loadingEventId === e.id;
 
             return (
-              <div
-                key={e.id}
-                style={{
-                  border: `1px solid ${ui.border}`,
-                  borderRadius: ui.radius,
-                  padding: 16,
-                  background: ui.panelBg,
-                  boxShadow: "0 2px 8px rgba(17, 24, 39, 0.04)",
-                }}
-              >
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16 }}>
+              <Card key={e.id} hover style={{ padding: designSystem.spacing.lg }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: designSystem.spacing.lg }}>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 6 }}>{e.Name}</div>
+                    <div style={{ 
+                      fontWeight: designSystem.typography.fontWeight.bold, 
+                      fontSize: designSystem.typography.fontSize.bodyLarge, 
+                      marginBottom: 6,
+                      color: designSystem.colors.text.primary
+                    }}>
+                      {e.Name}
+                    </div>
                     {e["Event Type"] && (
-                      <div style={{ opacity: 0.8, fontSize: 13, marginBottom: 8, color: ui.muted }}>
+                      <div style={{ 
+                        opacity: 0.8, 
+                        fontSize: designSystem.typography.fontSize.bodySmall, 
+                        marginBottom: designSystem.spacing.sm, 
+                        color: designSystem.colors.text.secondary 
+                      }}>
                         {e["Event Type"]}
                       </div>
                     )}
-                    <div style={{ marginTop: 8, opacity: 0.85, fontSize: 14 }}>
+                    <div style={{ 
+                      marginTop: designSystem.spacing.sm, 
+                      opacity: 0.85, 
+                      fontSize: designSystem.typography.fontSize.bodySmall,
+                      color: designSystem.colors.text.primary
+                    }}>
                       {fmtDateTime(start)} to {fmtDateTime(end)}
                     </div>
-                    <div style={{ marginTop: 6, opacity: 0.85, fontSize: 14 }}>
+                    <div style={{ 
+                      marginTop: 6, 
+                      opacity: 0.85, 
+                      fontSize: designSystem.typography.fontSize.bodySmall,
+                      color: designSystem.colors.text.primary
+                    }}>
                       Volunteers: {signed} / {needed || "—"}
                     </div>
                     {signedUp && (
-                      <div
-                        style={{
-                          marginTop: 8,
-                          display: "inline-block",
-                          padding: "4px 10px",
-                          borderRadius: 999,
-                          background: "#e8fff1",
-                          color: "#065f46",
-                          fontSize: 12,
-                          fontWeight: 600,
-                        }}
-                      >
-                        ✓ Signed Up
+                      <div style={{ marginTop: designSystem.spacing.sm }}>
+                        <Badge variant="success">✓ Signed Up</Badge>
                       </div>
                     )}
                   </div>
                   <div>
                     {signedUp ? (
-                      <button
+                      <Button
                         onClick={() => handleUnsignup(e.id)}
                         disabled={isLoading}
+                        variant="secondary"
+                        size="md"
                         style={{
-                          padding: "10px 16px",
-                          borderRadius: 12,
-                          border: `1px solid ${ui.border}`,
-                          background: ui.panelBg,
-                          cursor: isLoading ? "not-allowed" : "pointer",
-                          fontWeight: 600,
-                          fontSize: 14,
-                          color: "#b42318",
-                          opacity: isLoading ? 0.6 : 1,
-                          transition: "background 120ms ease, transform 120ms ease",
+                          color: designSystem.colors.semantic.errorText,
                         }}
-                        onMouseEnter={(e) => {
-                          if (!isLoading) {
-                            e.currentTarget.style.background = "#fff5f5";
-                            e.currentTarget.style.transform = "translateY(-1px)";
-                          }
-                        }}
-                        onMouseLeave={(e) => {
-                          if (!isLoading) {
-                            e.currentTarget.style.background = ui.panelBg;
-                            e.currentTarget.style.transform = "translateY(0px)";
-                          }
-                        }}
+                        aria-label={`Unsignup from ${e.Name}`}
                       >
                         {isLoading ? "..." : "Unsignup"}
-                      </button>
+                      </Button>
                     ) : (
-                      <button
+                      <Button
                         onClick={() => handleSignup(e.id)}
                         disabled={isLoading || isFull}
+                        variant={isFull ? "secondary" : "primary"}
+                        size="md"
                         style={{
-                          padding: "10px 16px",
-                          borderRadius: 12,
-                          border: `1px solid ${isFull ? ui.border : ui.primary}`,
-                          background: isFull ? ui.panelBg : ui.primary,
-                          cursor: isLoading || isFull ? "not-allowed" : "pointer",
-                          fontWeight: 600,
-                          fontSize: 14,
-                          color: isFull ? ui.muted : "#ffffff",
-                          opacity: isLoading ? 0.6 : 1,
-                          transition: "background 120ms ease, transform 120ms ease",
+                          color: isFull ? designSystem.colors.text.secondary : undefined,
                         }}
-                        onMouseEnter={(e) => {
-                          if (!isLoading && !isFull) {
-                            e.currentTarget.style.background = "#0050b3";
-                            e.currentTarget.style.transform = "translateY(-1px)";
-                          }
-                        }}
-                        onMouseLeave={(e) => {
-                          if (!isLoading && !isFull) {
-                            e.currentTarget.style.background = ui.primary;
-                            e.currentTarget.style.transform = "translateY(0px)";
-                          }
-                        }}
+                        aria-label={isFull ? `Event ${e.Name} is full` : `Sign up for ${e.Name}`}
                       >
                         {isLoading ? "..." : isFull ? "Full" : "Sign Up"}
-                      </button>
+                      </Button>
                     )}
                   </div>
                 </div>
-              </div>
+              </Card>
             );
           })
           )}

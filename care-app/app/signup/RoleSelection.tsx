@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import Button from "@/app/components/ui/Button";
+import { designSystem } from "@/lib/ui/design-system";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 interface RoleProps {
@@ -35,26 +37,32 @@ export default function RoleSelection({ userId, onRoleSelected }: RoleProps) {
   };
 
   return (
-    <div style={{ display: "grid", gap: 16, textAlign: "center" }}>
-      <h2 style={{ fontWeight: 500 }}>You are a _____</h2>
+    <div style={{ display: "grid", gap: designSystem.spacing.lg, textAlign: "center" }}>
+      <h2 style={{ 
+        fontWeight: designSystem.typography.fontWeight.medium, 
+        marginBottom: designSystem.spacing.sm,
+        fontSize: designSystem.typography.fontSize.h2,
+        color: designSystem.colors.text.primary
+      }}>
+        You are a _____
+      </h2>
+      
       {roles.map((role) => (
-        <button
+        <Button
           key={role}
           disabled={loading}
           onClick={() => handleRoleSelect(role)}
+          variant="secondary"
+          size="lg"
           style={{
-            padding: "24px 16px",
-            borderRadius: 16,
-            border: "2px solid #111",
-            background: "#fff",
-            fontSize: "1.1rem",
-            fontWeight: 600,
-            cursor: "pointer",
+            border: `2px solid ${designSystem.colors.text.primary}`,
+            fontSize: designSystem.typography.fontSize.bodyLarge,
             opacity: loading ? 0.6 : 1
           }}
+          aria-label={`Select ${role} role`}
         >
-          {role}
-        </button>
+          {role.replace("_", " ")}
+        </Button>
       ))}
     </div>
   );
