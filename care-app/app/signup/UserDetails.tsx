@@ -2,33 +2,56 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
-export default function UserDetails() {
+interface DetailsProps {
+  userId: string;
+}
+
+export default function UserDetails({ userId }: DetailsProps) {
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
   
-  // State to track interests
-  const [interests, setInterests] = useState<string[]>([]);
+  // Form States
+  const [fullName, setFullName] = useState("");
+  const [bio, setBio] = useState("");
+  const [selectedInterest, setSelectedInterest] = useState<string | null>(null);
 
-  const options = [
-    "Elderly Care",
-    "Child Care",
-    "Pet Sitting",
-    "Housekeeping",
-    "Medical Assistance",
-    "Gardening"
-  ];
+  const options = ["Recreation", "Arts", "Outdoor", "Performance"];
 
+  // Force "Only one preference" logic (Radio behavior)
   const toggleInterest = (option: string) => {
-    setInterests((prev) =>
-      prev.includes(option)
-        ? prev.filter((item) => item !== option)
-        : [...prev, option]
-    );
+    setSelectedInterest(option);
   };
 
-  const handleFinish = () => {
-    console.log("Saving interests:", interests);
-    router.push("/app");
+  const handleFinish = async () => {
+    if (!selectedInterest) {
+      alert("Please select one area of interest.");
+      return;
+    }
+
+    setLoading(true);
+    const supabase = createSupabaseBrowserClient();
+
+
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        display_name: fullName,
+        Preference: selectedInterest
+      })
+      .eq("user_id", userId);
+
+    setLoading(false);
+
+    if (error) {
+      console.error("Database error:", error.message);
+      alert("Failed to save details. Please try again.");
+      return;
+    }
+
+    // Success: Route back to login
+    router.push("/login");
   };
 
   return (
@@ -38,13 +61,15 @@ export default function UserDetails() {
       <div style={{ display: "grid", gap: 12 }}>
         <input
           placeholder="Full Name"
+          value={fullName}
+          onChange={(e) => setFullName(e.target.value)}
           style={{ padding: 16, borderRadius: 12, border: "2px solid #111", fontSize: "1rem" }}
         />
         
         {/* Interests Section */}
         <div style={{ marginTop: 10 }}>
           <p style={{ fontWeight: 600, marginBottom: 12, fontSize: "0.9rem" }}>
-            I am interested in:
+            I am interested in (Select one):
           </p>
           <div style={{ 
             display: "grid", 
@@ -52,7 +77,7 @@ export default function UserDetails() {
             gap: 10 
           }}>
             {options.map((option) => {
-              const isSelected = interests.includes(option);
+              const isSelected = selectedInterest === option;
               return (
                 <label
                   key={option}
@@ -67,7 +92,9 @@ export default function UserDetails() {
                     background: isSelected ? "#f0f0f0" : "#fff",
                     transition: "all 0.1s ease",
                     fontSize: "0.9rem",
-                    fontWeight: 500
+                    fontWeight: 500,
+                    // Subtle highlight for selected item
+                    boxShadow: isSelected ? "inset 0 0 0 1px #111" : "none"
                   }}
                 >
                   <input
@@ -90,6 +117,8 @@ export default function UserDetails() {
 
         <textarea
           placeholder="A little bit about you..."
+          value={bio}
+          onChange={(e) => setBio(e.target.value)}
           rows={3}
           style={{ 
             padding: 16, 
@@ -105,19 +134,21 @@ export default function UserDetails() {
 
       <button
         onClick={handleFinish}
+        disabled={loading || !selectedInterest}
         style={{
           padding: 16,
           borderRadius: 12,
-          background: "#111",
+          background: loading ? "#666" : "#111",
           color: "#fff",
           border: "none",
           fontWeight: 600,
-          cursor: "pointer",
+          cursor: loading ? "not-allowed" : "pointer",
           fontSize: "1rem",
-          marginTop: 10
+          marginTop: 10,
+          transition: "opacity 0.2s"
         }}
       >
-        Finish Setup
+        {loading ? "Saving..." : "Finish Setup"}
       </button>
     </div>
   );

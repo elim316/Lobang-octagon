@@ -1,53 +1,19 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
-interface SignupFormProps {
-  onSignupSuccess: () => void;
-}
-
-export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const next = searchParams.get("next") || "/app";
-
+export default function SignupForm({ onSignupSuccess }: { onSignupSuccess: (id: string) => void }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [infoMsg, setInfoMsg] = useState<string | null>(null);
-  const [redirectCountdown, setRedirectCountdown] = useState<number | null>(null);
-
-  // Auto redirect countdown effect (used if email confirmation is required)
-  useEffect(() => {
-    if (redirectCountdown === null) return;
-
-    if (redirectCountdown === 0) {
-      router.push(`/login?next=${encodeURIComponent(next)}`);
-      return;
-    }
-
-    const t = setTimeout(() => {
-      setRedirectCountdown((c) => (c === null ? null : c - 1));
-    }, 1000);
-
-    return () => clearTimeout(t);
-  }, [redirectCountdown, router, next]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setErrorMsg(null);
-    setInfoMsg(null);
-
-    // Basic Validations
-    if (password.length < 6) {
-      setErrorMsg("Password must be at least 6 characters.");
-      return;
-    }
 
     if (password !== confirm) {
       setErrorMsg("Passwords do not match.");
@@ -55,14 +21,11 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
     }
 
     setLoading(true);
-
     const supabase = createSupabaseBrowserClient();
+    
     const { data, error } = await supabase.auth.signUp({
       email: email.trim(),
       password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/login`,
-      },
     });
 
     setLoading(false);
@@ -72,63 +35,36 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
       return;
     }
 
-    /** 
-     * SUCCESS LOGIC 
-     * We trigger onSignupSuccess() to move to the "Role Selection" step.
-     * We do this even if they need to confirm their email, so they can
-     * finish setting up their profile data first.
-     **/
     if (data.user) {
-      onSignupSuccess();
-      return;
+      onSignupSuccess(data.user.id);
     }
-
-    // Fallback message if for some reason the step transition doesn't happen
-    setInfoMsg("Account created. Please check your email.");
   }
 
   return (
-    <form onSubmit={onSubmit} style={{ display: "grid", gap: 10 }}>
+    <form onSubmit={onSubmit} style={{ display: "grid", gap: 12 }}>
       <input
         placeholder="Email"
+        type="email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
-        type="email"
         required
-        style={{ 
-          padding: 12, 
-          borderRadius: 10, 
-          border: "1px solid #ddd",
-          fontSize: "1rem" 
-        }}
+        style={{ padding: 12, borderRadius: 10, border: "1px solid #ddd", fontSize: "1rem" }}
       />
-
       <input
-        placeholder="Password (min 6 characters)"
+        placeholder="Password"
+        type="password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
-        type="password"
         required
-        style={{ 
-          padding: 12, 
-          borderRadius: 10, 
-          border: "1px solid #ddd",
-          fontSize: "1rem" 
-        }}
+        style={{ padding: 12, borderRadius: 10, border: "1px solid #ddd", fontSize: "1rem" }}
       />
-
       <input
-        placeholder="Confirm password"
+        placeholder="Confirm Password"
+        type="password"
         value={confirm}
         onChange={(e) => setConfirm(e.target.value)}
-        type="password"
         required
-        style={{ 
-          padding: 12, 
-          borderRadius: 10, 
-          border: "1px solid #ddd",
-          fontSize: "1rem" 
-        }}
+        style={{ padding: 12, borderRadius: 10, border: "1px solid #ddd", fontSize: "1rem" }}
       />
 
       <button
@@ -136,53 +72,25 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
         disabled={loading}
         style={{
           padding: 14,
-          marginTop: 10,
           borderRadius: 10,
-          border: "none",
-          cursor: loading ? "not-allowed" : "pointer",
           background: "#111",
           color: "#fff",
-          fontSize: "1rem",
+          border: "none",
           fontWeight: 600,
+          cursor: "pointer",
         }}
       >
-        {loading ? "Creating account..." : "Create account"}
+        {loading ? "Creating..." : "Sign Up"}
       </button>
 
-      <Link
-        href={`/login?next=${encodeURIComponent(next)}`}
-        style={{
-          padding: 12,
-          borderRadius: 10,
-          border: "1px solid #ddd",
-          textDecoration: "none",
-          color: "#111",
-          display: "block",
-          textAlign: "center",
-          background: "#f7f7f7",
-          fontWeight: 600,
-          fontSize: "0.9rem"
-        }}
-      >
-        Back to login
+      {errorMsg && <p style={{ color: "crimson", textAlign: "center", fontSize: "0.9rem" }}>{errorMsg}</p>}
+
+      <Link href="/login" style={{ textAlign: "center", fontSize: "0.9rem", color: "#666" }}>
+        Already have an account? Log in
       </Link>
-
-      {errorMsg && (
-        <p style={{ color: "crimson", margin: 0, fontSize: "0.9rem", textAlign: "center" }}>
-          {errorMsg}
-        </p>
-      )}
-
-      {infoMsg && (
-        <p style={{ color: "#111", margin: 0, opacity: 0.85, fontSize: "0.9rem", textAlign: "center" }}>
-          {infoMsg}
-          {redirectCountdown !== null ? ` (${redirectCountdown}s)` : null}
-        </p>
-      )}
     </form>
   );
 }
-
 
 
 // "use client";
