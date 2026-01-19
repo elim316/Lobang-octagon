@@ -1,29 +1,36 @@
 "use client";
 
+import Button from "@/app/components/ui/Button";
+import { designSystem } from "@/lib/ui/design-system";
+
 export default function RoleSelection({ onRoleSelected }: { onRoleSelected: () => void }) {
   const roles = ["Caregiver", "Care Recipient", "Volunteer"];
 
   return (
-    <div style={{ display: "grid", gap: 16, textAlign: "center" }}>
-      <h2 style={{ fontWeight: 500, marginBottom: 8 }}>You are a _____</h2>
+    <div style={{ display: "grid", gap: designSystem.spacing.lg, textAlign: "center" }}>
+      <h2 style={{ 
+        fontWeight: designSystem.typography.fontWeight.medium, 
+        marginBottom: designSystem.spacing.sm,
+        fontSize: designSystem.typography.fontSize.h2,
+        color: designSystem.colors.text.primary
+      }}>
+        You are a _____
+      </h2>
       
       {roles.map((role) => (
-        <button
+        <Button
           key={role}
           onClick={onRoleSelected}
+          variant="secondary"
+          size="lg"
           style={{
-            padding: "24px 16px",
-            borderRadius: 16,
-            border: "2px solid #111", // Matches the bold lines in sketch
-            background: "#fff",
-            fontSize: "1.1rem",
-            fontWeight: 600,
-            cursor: "pointer",
-            transition: "transform 0.1s active",
+            border: `2px solid ${designSystem.colors.text.primary}`,
+            fontSize: designSystem.typography.fontSize.bodyLarge,
           }}
+          aria-label={`Select ${role} role`}
         >
           {role}
-        </button>
+        </Button>
       ))}
     </div>
   );

@@ -1,4 +1,7 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import Card from "@/app/components/ui/Card";
+import Badge from "@/app/components/ui/Badge";
+import { designSystem } from "@/lib/ui/design-system";
 
 function monthRange(monthSlug: string) {
   const [yStr, mStr] = monthSlug.split("-");
@@ -49,8 +52,18 @@ export default async function StaffMonthDataPage({
   if (eventsErr) {
     return (
       <div>
-        <h3 style={{ marginTop: 0 }}>Data for {month}</h3>
-        <p style={{ color: "crimson" }}>
+        <h3 style={{ 
+          marginTop: 0,
+          fontSize: designSystem.typography.fontSize.h3,
+          fontWeight: designSystem.typography.fontWeight.bold,
+          color: designSystem.colors.text.primary
+        }}>
+          Data for {month}
+        </h3>
+        <p style={{ 
+          color: designSystem.colors.semantic.errorText,
+          fontSize: designSystem.typography.fontSize.bodySmall
+        }}>
           Failed to load events: {eventsErr.message}
         </p>
       </div>
@@ -63,8 +76,20 @@ export default async function StaffMonthDataPage({
   if (!eventIds.length) {
     return (
       <div>
-        <h3 style={{ marginTop: 0 }}>Data for {month}</h3>
-        <p>No events found for this month.</p>
+        <h3 style={{ 
+          marginTop: 0,
+          fontSize: designSystem.typography.fontSize.h3,
+          fontWeight: designSystem.typography.fontWeight.bold,
+          color: designSystem.colors.text.primary
+        }}>
+          Data for {month}
+        </h3>
+        <p style={{ 
+          color: designSystem.colors.text.secondary,
+          fontSize: designSystem.typography.fontSize.bodySmall
+        }}>
+          No events found for this month.
+        </p>
       </div>
     );
   }
@@ -78,8 +103,18 @@ export default async function StaffMonthDataPage({
   if (signupsErr) {
     return (
       <div>
-        <h3 style={{ marginTop: 0 }}>Data for {month}</h3>
-        <p style={{ color: "crimson" }}>
+        <h3 style={{ 
+          marginTop: 0,
+          fontSize: designSystem.typography.fontSize.h3,
+          fontWeight: designSystem.typography.fontWeight.bold,
+          color: designSystem.colors.text.primary
+        }}>
+          Data for {month}
+        </h3>
+        <p style={{ 
+          color: designSystem.colors.semantic.errorText,
+          fontSize: designSystem.typography.fontSize.bodySmall
+        }}>
           Failed to load signups: {signupsErr.message}
         </p>
       </div>
@@ -93,55 +128,67 @@ export default async function StaffMonthDataPage({
   }
 
   return (
-    <div style={{ display: "grid", gap: 12 }}>
+    <div style={{ display: "grid", gap: designSystem.spacing.md }}>
       <div>
-        <h3 style={{ marginTop: 0 }}>Coverage for {month}</h3>
-        <p style={{ marginTop: 6, opacity: 0.8 }}>
+        <h3 style={{ 
+          marginTop: 0,
+          fontSize: designSystem.typography.fontSize.h3,
+          fontWeight: designSystem.typography.fontWeight.bold,
+          color: designSystem.colors.text.primary
+        }}>
+          Coverage for {month}
+        </h3>
+        <p style={{ 
+          marginTop: 6, 
+          opacity: 0.8,
+          fontSize: designSystem.typography.fontSize.bodySmall,
+          color: designSystem.colors.text.secondary
+        }}>
           Required vs signed-up volunteers per event.
         </p>
       </div>
 
-      <div style={{ display: "grid", gap: 10 }}>
+      <div style={{ display: "grid", gap: designSystem.spacing.md }}>
         {(events ?? []).map((e) => {
           const needed = Number(e["No. of people"] ?? 0);
           const signed = counts.get(e.id) ?? 0;
           const ok = signed >= needed;
 
           return (
-            <div
-              key={e.id}
-              style={{
-                border: "1px solid #eee",
-                borderRadius: 14,
-                padding: 12,
-                display: "flex",
-                justifyContent: "space-between",
-                gap: 12,
-                alignItems: "center",
-              }}
-            >
-              <div style={{ display: "grid", gap: 4 }}>
-                <div style={{ fontWeight: 600 }}>{e.Name}</div>
-                <div style={{ fontSize: 14, opacity: 0.85 }}>
+            <Card key={e.id} style={{ 
+              display: "flex",
+              justifyContent: "space-between",
+              gap: designSystem.spacing.md,
+              alignItems: "center",
+            }}>
+              <div style={{ display: "grid", gap: designSystem.spacing.xs }}>
+                <div style={{ 
+                  fontWeight: designSystem.typography.fontWeight.semibold,
+                  fontSize: designSystem.typography.fontSize.body,
+                  color: designSystem.colors.text.primary
+                }}>
+                  {e.Name}
+                </div>
+                <div style={{ 
+                  fontSize: designSystem.typography.fontSize.bodySmall, 
+                  opacity: 0.85,
+                  color: designSystem.colors.text.primary
+                }}>
                   {fmtDateTime(e["Date and Time"])}
                 </div>
-                <div style={{ fontSize: 14, opacity: 0.85 }}>
+                <div style={{ 
+                  fontSize: designSystem.typography.fontSize.bodySmall, 
+                  opacity: 0.85,
+                  color: designSystem.colors.text.primary
+                }}>
                   {signed} signed / {needed} needed
                 </div>
               </div>
 
-              <div
-                style={{
-                  padding: "6px 10px",
-                  borderRadius: 999,
-                  border: "1px solid #eee",
-                  fontWeight: 600,
-                  background: ok ? "#e8fff1" : "#fff8d9",
-                }}
-              >
+              <Badge variant={ok ? "success" : "warning"}>
                 {ok ? "Enough" : "Not enough"}
-              </div>
-            </div>
+              </Badge>
+            </Card>
           );
         })}
       </div>

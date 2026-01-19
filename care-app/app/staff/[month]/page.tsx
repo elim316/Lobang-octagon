@@ -1,4 +1,6 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import Card from "@/app/components/ui/Card";
+import { designSystem } from "@/lib/ui/design-system";
 
 function monthRange(monthSlug: string) {
   const [yStr, mStr] = monthSlug.split("-");
@@ -50,46 +52,87 @@ export default async function StaffMonthEventsPage({
   if (error) {
     return (
       <div>
-        <h3 style={{ marginTop: 0 }}>Events for {month}</h3>
-        <p style={{ color: "crimson" }}>Failed to load events: {error.message}</p>
+        <h3 style={{ 
+          marginTop: 0,
+          fontSize: designSystem.typography.fontSize.h3,
+          fontWeight: designSystem.typography.fontWeight.bold,
+          color: designSystem.colors.text.primary
+        }}>
+          Events for {month}
+        </h3>
+        <p style={{ 
+          color: designSystem.colors.semantic.errorText,
+          fontSize: designSystem.typography.fontSize.bodySmall
+        }}>
+          Failed to load events: {error.message}
+        </p>
       </div>
     );
   }
 
   return (
-    <div style={{ display: "grid", gap: 12 }}>
-      <h3 style={{ marginTop: 0 }}>Events for {month}</h3>
+    <div style={{ display: "grid", gap: designSystem.spacing.md }}>
+      <h3 style={{ 
+        marginTop: 0,
+        fontSize: designSystem.typography.fontSize.h3,
+        fontWeight: designSystem.typography.fontWeight.bold,
+        color: designSystem.colors.text.primary
+      }}>
+        Events for {month}
+      </h3>
 
-      <div style={{ display: "grid", gap: 10 }}>
+      <div style={{ display: "grid", gap: designSystem.spacing.md }}>
         {(events ?? []).map((e) => {
           const start = e["Date and Time"];
           const durationMin = Number(e.Duration ?? 0);
           const end = new Date(new Date(start).getTime() + durationMin * 60_000).toISOString();
 
           return (
-            <div
-              key={e.id}
-              style={{
-                border: "1px solid #eee",
-                borderRadius: 16,
-                padding: 16,
-                background: "#fff",
-              }}
-            >
-              <div style={{ fontWeight: 700, fontSize: 16 }}>{e.Name}</div>
-              <div style={{ opacity: 0.8, marginTop: 6 }}>{e["Event Type"] ?? ""}</div>
-              <div style={{ marginTop: 6, opacity: 0.85 }}>
+            <Card key={e.id} hover>
+              <div style={{ 
+                fontWeight: designSystem.typography.fontWeight.bold, 
+                fontSize: designSystem.typography.fontSize.body,
+                color: designSystem.colors.text.primary
+              }}>
+                {e.Name}
+              </div>
+              <div style={{ 
+                opacity: 0.8, 
+                marginTop: 6,
+                fontSize: designSystem.typography.fontSize.bodySmall,
+                color: designSystem.colors.text.secondary
+              }}>
+                {e["Event Type"] ?? ""}
+              </div>
+              <div style={{ 
+                marginTop: 6, 
+                opacity: 0.85,
+                fontSize: designSystem.typography.fontSize.bodySmall,
+                color: designSystem.colors.text.primary
+              }}>
                 {fmtDateTime(start)} to {fmtDateTime(end)}
               </div>
-              <div style={{ marginTop: 6, opacity: 0.85 }}>
+              <div style={{ 
+                marginTop: 6, 
+                opacity: 0.85,
+                fontSize: designSystem.typography.fontSize.bodySmall,
+                color: designSystem.colors.text.primary
+              }}>
                 Needed: {Number(e["No. of people"] ?? 0)}
               </div>
-            </div>
+            </Card>
           );
         })}
       </div>
 
-      {!events?.length ? <p>No events found for this month.</p> : null}
+      {!events?.length ? (
+        <p style={{ 
+          color: designSystem.colors.text.secondary,
+          fontSize: designSystem.typography.fontSize.bodySmall
+        }}>
+          No events found for this month.
+        </p>
+      ) : null}
     </div>
   );
 }

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import LogoutButton from "@/app/components/LogoutButton";
+import { designSystem } from "@/lib/ui/design-system";
 
 type MonthItem = { label: string; slug: string };
 
@@ -16,20 +17,6 @@ function getActiveTab(pathname: string) {
   if (pathname.includes("/calendar")) return "calendar";
   return "events";
 }
-
-const ui = {
-  pageBg: "#f6f7fb",
-  panelBg: "#ffffff",
-  sidebarBg: "#ffffff",
-  border: "#e7e9ee",
-  text: "#111827",
-  muted: "#6b7280",
-  primary: "#1677ff",
-  primarySoft: "#eaf2ff",
-  hover: "#f3f4f6",
-  shadow: "0 10px 30px rgba(17, 24, 39, 0.06)",
-  radius: 16,
-};
 
 export default function StaffShell({
   children,
@@ -49,35 +36,35 @@ export default function StaffShell({
   const tabStyle = (isActive: boolean) => ({
     display: "inline-flex",
     alignItems: "center",
-    gap: 8,
+    gap: designSystem.spacing.sm,
     padding: "10px 12px",
-    borderRadius: 12,
-    border: `1px solid ${ui.border}`,
+    borderRadius: designSystem.borderRadius.md,
+    border: `1px solid ${designSystem.colors.border}`,
     textDecoration: "none",
-    color: ui.text,
-    background: isActive ? ui.panelBg : ui.hover,
-    fontWeight: isActive ? 700 : 500,
+    color: designSystem.colors.text.primary,
+    background: isActive ? designSystem.colors.surface : designSystem.colors.hover,
+    fontWeight: isActive ? designSystem.typography.fontWeight.bold : designSystem.typography.fontWeight.medium,
     whiteSpace: "nowrap" as const,
-    transition: "background 120ms ease, transform 120ms ease",
+    transition: `background ${designSystem.transitions.fast}, transform ${designSystem.transitions.fast}`,
   });
 
   const monthItemStyle = (isActive: boolean) => ({
     padding: "10px 12px",
-    borderRadius: 12,
-    border: `1px solid ${ui.border}`,
-    background: isActive ? ui.primarySoft : ui.panelBg,
+    borderRadius: designSystem.borderRadius.md,
+    border: `1px solid ${designSystem.colors.border}`,
+    background: isActive ? designSystem.colors.primarySoft : designSystem.colors.surface,
     textDecoration: "none",
-    color: ui.text,
-    fontWeight: isActive ? 800 : 600,
+    color: designSystem.colors.text.primary,
+    fontWeight: isActive ? designSystem.typography.fontWeight.extrabold : designSystem.typography.fontWeight.semibold,
     display: "block",
-    transition: "background 120ms ease, transform 120ms ease",
+    transition: `background ${designSystem.transitions.fast}, transform ${designSystem.transitions.fast}`,
   });
 
   return (
     <div
       style={{
         minHeight: "100vh",
-        background: ui.pageBg,
+        background: designSystem.colors.background,
         padding: 14,
         boxSizing: "border-box",
       }}
@@ -86,33 +73,33 @@ export default function StaffShell({
         style={{
           display: "flex",
           minHeight: "calc(100vh - 28px)",
-          borderRadius: ui.radius,
+          borderRadius: designSystem.borderRadius.lg,
           overflow: "hidden",
-          border: `1px solid ${ui.border}`,
-          boxShadow: ui.shadow,
-          background: ui.panelBg,
+          border: `1px solid ${designSystem.colors.border}`,
+          boxShadow: designSystem.shadows.lg,
+          background: designSystem.colors.surface,
         }}
       >
         {/* Sidebar */}
         <aside
           style={{
             width: 260,
-            borderRight: `1px solid ${ui.border}`,
-            padding: 16,
-            background: ui.sidebarBg,
+            borderRight: `1px solid ${designSystem.colors.border}`,
+            padding: designSystem.spacing.lg,
+            background: designSystem.colors.surface,
             display: "flex",
             flexDirection: "column",
             gap: 14,
           }}
         >
           <div>
-            <div style={{ fontSize: 12, fontWeight: 800, color: ui.muted }}>
+            <div style={{ fontSize: designSystem.typography.fontSize.caption, fontWeight: designSystem.typography.fontWeight.extrabold, color: designSystem.colors.text.secondary }}>
               DASHBOARD
             </div>
-            <div style={{ marginTop: 6, fontSize: 20, fontWeight: 900, color: ui.text }}>
+            <div style={{ marginTop: 6, fontSize: designSystem.typography.fontSize.h3, fontWeight: designSystem.typography.fontWeight.black, color: designSystem.colors.text.primary }}>
               Staff
             </div>
-            <div style={{ marginTop: 6, fontSize: 13, color: ui.muted, lineHeight: 1.4 }}>
+            <div style={{ marginTop: 6, fontSize: designSystem.typography.fontSize.bodySmall, color: designSystem.colors.text.secondary, lineHeight: 1.4 }}>
               Manage monthly events, volunteer coverage, and exports.
             </div>
           </div>
@@ -121,24 +108,24 @@ export default function StaffShell({
             <div
               style={{
                 padding: 10,
-                borderRadius: 12,
-                border: `1px solid ${ui.border}`,
-                background: "#fff5f5",
-                color: "#b42318",
-                fontSize: 13,
+                borderRadius: designSystem.borderRadius.md,
+                border: `1px solid ${designSystem.colors.border}`,
+                background: designSystem.colors.semantic.errorBg,
+                color: designSystem.colors.semantic.errorText,
+                fontSize: designSystem.typography.fontSize.bodySmall,
               }}
             >
               Failed to load months: {error}
             </div>
           ) : null}
 
-          <div style={{ display: "grid", gap: 8 }}>
-            <div style={{ fontSize: 12, fontWeight: 800, color: ui.muted }}>
+          <div style={{ display: "grid", gap: designSystem.spacing.sm }}>
+            <div style={{ fontSize: designSystem.typography.fontSize.caption, fontWeight: designSystem.typography.fontWeight.extrabold, color: designSystem.colors.text.secondary }}>
               MONTHS
             </div>
 
             {months.length ? (
-              <div style={{ display: "grid", gap: 8 }}>
+              <div style={{ display: "grid", gap: designSystem.spacing.sm }}>
                 {months.map((m) => {
                   const active = m.slug === activeMonth;
                   return (
@@ -146,17 +133,18 @@ export default function StaffShell({
                       key={m.slug}
                       href={`/staff/${m.slug}`}
                       style={monthItemStyle(active)}
+                      aria-current={active ? "page" : undefined}
                       onMouseEnter={(e) => {
                         (e.currentTarget as HTMLAnchorElement).style.transform = "translateY(-1px)";
                         (e.currentTarget as HTMLAnchorElement).style.background = active
-                          ? ui.primarySoft
-                          : ui.hover;
+                          ? designSystem.colors.primarySoft
+                          : designSystem.colors.hover;
                       }}
                       onMouseLeave={(e) => {
                         (e.currentTarget as HTMLAnchorElement).style.transform = "translateY(0px)";
                         (e.currentTarget as HTMLAnchorElement).style.background = active
-                          ? ui.primarySoft
-                          : ui.panelBg;
+                          ? designSystem.colors.primarySoft
+                          : designSystem.colors.surface;
                       }}
                     >
                       {m.label}
@@ -165,7 +153,7 @@ export default function StaffShell({
                 })}
               </div>
             ) : (
-              <p style={{ fontSize: 13, color: ui.muted, margin: 0 }}>
+              <p style={{ fontSize: designSystem.typography.fontSize.bodySmall, color: designSystem.colors.text.secondary, margin: 0 }}>
                 No months available yet.
               </p>
             )}
@@ -177,7 +165,7 @@ export default function StaffShell({
         </aside>
 
         {/* Main */}
-        <main style={{ flex: 1, padding: 16 }}>
+        <main style={{ flex: 1, padding: designSystem.spacing.lg }}>
           {/* Tabs */}
           <div
             style={{
@@ -191,6 +179,7 @@ export default function StaffShell({
             <Link
               href={`/staff/${activeMonth}`}
               style={tabStyle(activeTab === "events")}
+              aria-current={activeTab === "events" ? "page" : undefined}
               onMouseEnter={(e) => {
                 (e.currentTarget as HTMLAnchorElement).style.transform = "translateY(-1px)";
               }}
@@ -204,6 +193,7 @@ export default function StaffShell({
             <Link
               href={`/staff/${activeMonth}/data`}
               style={tabStyle(activeTab === "data")}
+              aria-current={activeTab === "data" ? "page" : undefined}
               onMouseEnter={(e) => {
                 (e.currentTarget as HTMLAnchorElement).style.transform = "translateY(-1px)";
               }}
@@ -217,6 +207,7 @@ export default function StaffShell({
             <Link
               href={`/staff/${activeMonth}/calendar`}
               style={tabStyle(activeTab === "calendar")}
+              aria-current={activeTab === "calendar" ? "page" : undefined}
               onMouseEnter={(e) => {
                 (e.currentTarget as HTMLAnchorElement).style.transform = "translateY(-1px)";
               }}
@@ -227,20 +218,20 @@ export default function StaffShell({
               Calendar
             </Link>
 
-            <div style={{ marginLeft: "auto", fontSize: 13, color: ui.muted }}>
-              Viewing: <span style={{ fontWeight: 800, color: ui.text }}>{activeMonth}</span>
+            <div style={{ marginLeft: "auto", fontSize: designSystem.typography.fontSize.bodySmall, color: designSystem.colors.text.secondary }}>
+              Viewing: <span style={{ fontWeight: designSystem.typography.fontWeight.extrabold, color: designSystem.colors.text.primary }}>{activeMonth}</span>
             </div>
           </div>
 
           {/* Content card */}
           <div
             style={{
-              border: `1px solid ${ui.border}`,
-              borderRadius: ui.radius,
-              padding: 16,
+              border: `1px solid ${designSystem.colors.border}`,
+              borderRadius: designSystem.borderRadius.lg,
+              padding: designSystem.spacing.lg,
               minHeight: 420,
-              background: ui.panelBg,
-              boxShadow: "0 6px 18px rgba(17, 24, 39, 0.05)",
+              background: designSystem.colors.surface,
+              boxShadow: designSystem.shadows.md,
             }}
           >
             {children}

@@ -1,5 +1,9 @@
 import Link from "next/link";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import Card from "@/app/components/ui/Card";
+import Button from "@/app/components/ui/Button";
+import Badge from "@/app/components/ui/Badge";
+import { designSystem } from "@/lib/ui/design-system";
 
 type EventRow = {
   id: number;
@@ -61,8 +65,20 @@ export default async function StaffMonthCalendarPage({
   if (eventsErr) {
     return (
       <div>
-        <h3 style={{ marginTop: 0 }}>Calendar for {month}</h3>
-        <p style={{ color: "crimson" }}>Failed to load events: {eventsErr.message}</p>
+        <h3 style={{ 
+          marginTop: 0,
+          fontSize: designSystem.typography.fontSize.h3,
+          fontWeight: designSystem.typography.fontWeight.bold,
+          color: designSystem.colors.text.primary
+        }}>
+          Calendar for {month}
+        </h3>
+        <p style={{ 
+          color: designSystem.colors.semantic.errorText,
+          fontSize: designSystem.typography.fontSize.bodySmall
+        }}>
+          Failed to load events: {eventsErr.message}
+        </p>
       </div>
     );
   }
@@ -79,8 +95,20 @@ export default async function StaffMonthCalendarPage({
   if (signupsErr) {
     return (
       <div>
-        <h3 style={{ marginTop: 0 }}>Calendar for {month}</h3>
-        <p style={{ color: "crimson" }}>Failed to load signups: {signupsErr.message}</p>
+        <h3 style={{ 
+          marginTop: 0,
+          fontSize: designSystem.typography.fontSize.h3,
+          fontWeight: designSystem.typography.fontWeight.bold,
+          color: designSystem.colors.text.primary
+        }}>
+          Calendar for {month}
+        </h3>
+        <p style={{ 
+          color: designSystem.colors.semantic.errorText,
+          fontSize: designSystem.typography.fontSize.bodySmall
+        }}>
+          Failed to load signups: {signupsErr.message}
+        </p>
       </div>
     );
   }
@@ -126,11 +154,23 @@ export default async function StaffMonthCalendarPage({
   const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
   return (
-    <div style={{ display: "grid", gap: 12 }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+    <div style={{ display: "grid", gap: designSystem.spacing.md }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: designSystem.spacing.md }}>
         <div>
-          <h3 style={{ marginTop: 0 }}>Calendar for {month}</h3>
-          <p style={{ marginTop: 6, opacity: 0.8 }}>
+          <h3 style={{ 
+            marginTop: 0,
+            fontSize: designSystem.typography.fontSize.h3,
+            fontWeight: designSystem.typography.fontWeight.bold,
+            color: designSystem.colors.text.primary
+          }}>
+            Calendar for {month}
+          </h3>
+          <p style={{ 
+            marginTop: 6, 
+            opacity: 0.8,
+            fontSize: designSystem.typography.fontSize.bodySmall,
+            color: designSystem.colors.text.secondary
+          }}>
             Each event shows coverage status. Green means enough volunteers, yellow means not enough.
           </p>
         </div>
@@ -138,34 +178,31 @@ export default async function StaffMonthCalendarPage({
         <Link
           href={`/staff/${month}/export`}
           style={{
-            padding: "10px 12px",
-            borderRadius: 12,
-            border: "1px solid #eee",
             textDecoration: "none",
-            color: "#111",
-            background: "#fff",
-            fontWeight: 600,
-            whiteSpace: "nowrap",
           }}
         >
-          Download CSV
+          <Button variant="secondary" size="md">
+            Download CSV
+          </Button>
         </Link>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 220px", gap: 16 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 220px", gap: designSystem.spacing.lg }}>
         {/* Calendar */}
-        <div
-          style={{
-            border: "1px solid #eee",
-            borderRadius: 16,
-            overflow: "hidden",
-            background: "#fff",
-          }}
-        >
+        <Card style={{ overflow: "hidden", padding: 0 }}>
           {/* Week header */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", borderBottom: "1px solid #eee" }}>
+          <div style={{ 
+            display: "grid", 
+            gridTemplateColumns: "repeat(7, 1fr)", 
+            borderBottom: `1px solid ${designSystem.colors.border}` 
+          }}>
             {weekDays.map((w) => (
-              <div key={w} style={{ padding: 10, fontSize: 12, opacity: 0.75 }}>
+              <div key={w} style={{ 
+                padding: 10, 
+                fontSize: designSystem.typography.fontSize.caption, 
+                opacity: 0.75,
+                color: designSystem.colors.text.secondary
+              }}>
                 {w}
               </div>
             ))}
@@ -183,70 +220,95 @@ export default async function StaffMonthCalendarPage({
                   key={idx}
                   style={{
                     minHeight: 110,
-                    borderRight: (idx + 1) % 7 === 0 ? "none" : "1px solid #eee",
-                    borderBottom: idx < cells.length - 7 ? "1px solid #eee" : "none",
+                    borderRight: (idx + 1) % 7 === 0 ? "none" : `1px solid ${designSystem.colors.border}`,
+                    borderBottom: idx < cells.length - 7 ? `1px solid ${designSystem.colors.border}` : "none",
                     padding: 10,
-                    background: d ? "#fff" : "#fafafa",
+                    background: d ? designSystem.colors.surface : designSystem.colors.background,
                   }}
                 >
                   {d ? (
-                    <div style={{ fontSize: 12, opacity: 0.75, marginBottom: 8 }}>{d.getUTCDate()}</div>
+                    <div style={{ 
+                      fontSize: designSystem.typography.fontSize.caption, 
+                      opacity: 0.75, 
+                      marginBottom: designSystem.spacing.sm,
+                      color: designSystem.colors.text.secondary
+                    }}>
+                      {d.getUTCDate()}
+                    </div>
                   ) : null}
 
                   <div style={{ display: "grid", gap: 6 }}>
                     {items.slice(0, 3).map((it) => (
-                      <div
+                      <Badge
                         key={it.id}
+                        variant={it.ok ? "success" : "warning"}
                         title={`${it.signed} signed / ${it.needed} needed`}
-                        style={{
-                          padding: "6px 8px",
-                          borderRadius: 10,
-                          border: "1px solid #eee",
-                          fontSize: 12,
-                          background: it.ok ? "#e8fff1" : "#fff8d9",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                        }}
                       >
                         {it.name}
-                      </div>
+                      </Badge>
                     ))}
 
                     {items.length > 3 ? (
-                      <div style={{ fontSize: 12, opacity: 0.7 }}>+{items.length - 3} more</div>
+                      <div style={{ 
+                        fontSize: designSystem.typography.fontSize.caption, 
+                        opacity: 0.7,
+                        color: designSystem.colors.text.secondary
+                      }}>
+                        +{items.length - 3} more
+                      </div>
                     ) : null}
                   </div>
                 </div>
               );
             })}
           </div>
-        </div>
+        </Card>
 
         {/* Legend */}
-        <div
-          style={{
-            border: "1px solid #eee",
-            borderRadius: 16,
-            padding: 14,
-            background: "#fff",
-            height: "fit-content",
-          }}
-        >
-          <div style={{ fontWeight: 600, marginBottom: 10 }}>Legend</div>
+        <Card style={{ height: "fit-content" }}>
+          <div style={{ 
+            fontWeight: designSystem.typography.fontWeight.semibold, 
+            marginBottom: designSystem.spacing.md,
+            fontSize: designSystem.typography.fontSize.body,
+            color: designSystem.colors.text.primary
+          }}>
+            Legend
+          </div>
 
-          <div style={{ display: "grid", gap: 10 }}>
-            <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-              <div style={{ width: 16, height: 16, borderRadius: 6, background: "#e8fff1", border: "1px solid #eee" }} />
-              <div style={{ fontSize: 13 }}>Enough volunteers</div>
+          <div style={{ display: "grid", gap: designSystem.spacing.md }}>
+            <div style={{ display: "flex", gap: designSystem.spacing.md, alignItems: "center" }}>
+              <div style={{ 
+                width: 16, 
+                height: 16, 
+                borderRadius: designSystem.borderRadius.sm, 
+                background: designSystem.colors.semantic.successBg, 
+                border: `1px solid ${designSystem.colors.border}` 
+              }} />
+              <div style={{ 
+                fontSize: designSystem.typography.fontSize.bodySmall,
+                color: designSystem.colors.text.primary
+              }}>
+                Enough volunteers
+              </div>
             </div>
 
-            <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-              <div style={{ width: 16, height: 16, borderRadius: 6, background: "#fff8d9", border: "1px solid #eee" }} />
-              <div style={{ fontSize: 13 }}>Not enough</div>
+            <div style={{ display: "flex", gap: designSystem.spacing.md, alignItems: "center" }}>
+              <div style={{ 
+                width: 16, 
+                height: 16, 
+                borderRadius: designSystem.borderRadius.sm, 
+                background: designSystem.colors.semantic.warningBg, 
+                border: `1px solid ${designSystem.colors.border}` 
+              }} />
+              <div style={{ 
+                fontSize: designSystem.typography.fontSize.bodySmall,
+                color: designSystem.colors.text.primary
+              }}>
+                Not enough
+              </div>
             </div>
           </div>
-        </div>
+        </Card>
       </div>
     </div>
   );
