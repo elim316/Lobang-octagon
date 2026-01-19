@@ -1,10 +1,40 @@
 "use client";
 
+import { useState } from "react";
 import Button from "@/app/components/ui/Button";
 import { designSystem } from "@/lib/ui/design-system";
+import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
-export default function RoleSelection({ onRoleSelected }: { onRoleSelected: () => void }) {
-  const roles = ["Caregiver", "Care Recipient", "Volunteer"];
+interface RoleProps {
+  userId: string;
+  onRoleSelected: () => void;
+}
+
+export default function RoleSelection({ userId, onRoleSelected }: RoleProps) {
+  const [loading, setLoading] = useState(false);
+  const roles = ["Caregiver", "Care_Recipient", "Volunteer"];
+
+  const handleRoleSelect = async (role: string) => {
+    setLoading(true);
+    const supabase = createSupabaseBrowserClient();
+
+    // Use .upsert to ensure the row exists and updates the role
+    const { error } = await supabase
+      .from("profiles")
+      .upsert({ 
+        user_id: userId, 
+        role: role.toLowerCase() 
+      });
+
+    setLoading(false);
+
+    if (error) {
+      alert("Error saving role: " + error.message);
+      return;
+    }
+
+    onRoleSelected();
+  };
 
   return (
     <div style={{ display: "grid", gap: designSystem.spacing.lg, textAlign: "center" }}>
@@ -20,16 +50,18 @@ export default function RoleSelection({ onRoleSelected }: { onRoleSelected: () =
       {roles.map((role) => (
         <Button
           key={role}
-          onClick={onRoleSelected}
+          disabled={loading}
+          onClick={() => handleRoleSelect(role)}
           variant="secondary"
           size="lg"
           style={{
             border: `2px solid ${designSystem.colors.text.primary}`,
             fontSize: designSystem.typography.fontSize.bodyLarge,
+            opacity: loading ? 0.6 : 1
           }}
           aria-label={`Select ${role} role`}
         >
-          {role}
+          {role.replace("_", " ")}
         </Button>
       ))}
     </div>

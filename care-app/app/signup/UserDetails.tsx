@@ -5,33 +5,55 @@ import { useRouter } from "next/navigation";
 import Input from "@/app/components/ui/Input";
 import Button from "@/app/components/ui/Button";
 import { designSystem } from "@/lib/ui/design-system";
+import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
-export default function UserDetails() {
+interface DetailsProps {
+  userId: string;
+}
+
+export default function UserDetails({ userId }: DetailsProps) {
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
   
-  // State to track interests
-  const [interests, setInterests] = useState<string[]>([]);
+  // Form States
+  const [fullName, setFullName] = useState("");
+  const [bio, setBio] = useState("");
+  const [selectedInterest, setSelectedInterest] = useState<string | null>(null);
 
-  const options = [
-    "Elderly Care",
-    "Child Care",
-    "Pet Sitting",
-    "Housekeeping",
-    "Medical Assistance",
-    "Gardening"
-  ];
+  const options = ["Recreation", "Arts", "Outdoor", "Performance"];
 
+  // Force "Only one preference" logic (Radio behavior)
   const toggleInterest = (option: string) => {
-    setInterests((prev) =>
-      prev.includes(option)
-        ? prev.filter((item) => item !== option)
-        : [...prev, option]
-    );
+    setSelectedInterest(option);
   };
 
-  const handleFinish = () => {
-    console.log("Saving interests:", interests);
-    router.push("/app");
+  const handleFinish = async () => {
+    if (!selectedInterest) {
+      alert("Please select one area of interest.");
+      return;
+    }
+
+    setLoading(true);
+    const supabase = createSupabaseBrowserClient();
+
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        display_name: fullName,
+        Preference: selectedInterest
+      })
+      .eq("user_id", userId);
+
+    setLoading(false);
+
+    if (error) {
+      console.error("Database error:", error.message);
+      alert("Failed to save details. Please try again.");
+      return;
+    }
+
+    // Success: Route back to login
+    router.push("/login");
   };
 
   return (
@@ -49,6 +71,8 @@ export default function UserDetails() {
         <Input
           id="fullName"
           placeholder="Full Name"
+          value={fullName}
+          onChange={(e) => setFullName(e.target.value)}
           aria-label="Full Name"
         />
         
@@ -60,7 +84,7 @@ export default function UserDetails() {
             fontSize: designSystem.typography.fontSize.bodySmall,
             color: designSystem.colors.text.primary
           }}>
-            I am interested in:
+            I am interested in (Select one):
           </p>
           <div style={{ 
             display: "grid", 
@@ -68,7 +92,7 @@ export default function UserDetails() {
             gap: designSystem.spacing.md 
           }}>
             {options.map((option) => {
-              const isSelected = interests.includes(option);
+              const isSelected = selectedInterest === option;
               return (
                 <label
                   key={option}
@@ -83,7 +107,8 @@ export default function UserDetails() {
                     background: isSelected ? designSystem.colors.hover : designSystem.colors.surface,
                     transition: `all ${designSystem.transitions.fast}`,
                     fontSize: designSystem.typography.fontSize.bodySmall,
-                    fontWeight: designSystem.typography.fontWeight.medium
+                    fontWeight: designSystem.typography.fontWeight.medium,
+                    boxShadow: isSelected ? "inset 0 0 0 1px #111" : "none"
                   }}
                 >
                   <input
@@ -107,6 +132,8 @@ export default function UserDetails() {
 
         <textarea
           placeholder="A little bit about you..."
+          value={bio}
+          onChange={(e) => setBio(e.target.value)}
           rows={3}
           style={{ 
             padding: designSystem.spacing.lg, 
@@ -123,10 +150,11 @@ export default function UserDetails() {
 
       <Button
         onClick={handleFinish}
+        disabled={loading || !selectedInterest}
         size="lg"
         style={{ marginTop: designSystem.spacing.md }}
       >
-        Finish Setup
+        {loading ? "Saving..." : "Finish Setup"}
       </Button>
     </div>
   );
