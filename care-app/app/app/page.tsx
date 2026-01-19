@@ -24,7 +24,7 @@ export default async function AppEntryPage() {
     case "caregiver":
       redirect("/caregiver");
     case "care_recipient":
-      redirect("/recipient");
+      redirect("/care-recipient");
     default:
       redirect("/unauthorized");
   }

@@ -30,6 +30,7 @@ export async function middleware(req: NextRequest) {
     pathname.startsWith("/staff") ||
     pathname.startsWith("/volunteer") ||
     pathname.startsWith("/caregiver") ||
+    pathname.startsWith("/care-recipient") ||
     pathname.startsWith("/recipient") ||
     pathname.startsWith("/app");
 
