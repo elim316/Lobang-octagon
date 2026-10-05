@@ -1,190 +1,76 @@
 # MINDSync
 
-## Problem Statement
+Built for Hack4Good. MINDSync is a centralised multi-branch event and volunteer management web application designed for MINDS to replace scattered spreadsheets, dead links, and manual forms across branches.
 
-MINDS currently faces significant challenges in managing event signups across multiple branches:
+## Problem Context
 
-- **Fragmented Management**: Staff must manage numerous Google Forms and Sheets for different events, which is time-consuming and menial
-- **Dead Links & Scattered Information**: Multiple dead links and calendars scattered across the internet create confusion
-- **Inconsistent Formats**: Each branch creates its own calendar on different platforms with different formats, leading to:
-  - Repeated work across branches
-  - Confusion for volunteers and participants trying to sign up
-  - Difficulty in maintaining a centralized view of event coverage
+Managing volunteer and participant signups across multiple branches using separate Google Forms and spreadsheets creates three recurring bottlenecks:
 
-## Solution
+- Fragmented administration: Staff spend hours reconciling separate sheets and forms for each event.
+- Inconsistent calendar formats: Each branch publishes schedules differently, making it difficult for volunteers and caregivers to find available sessions.
+- Limited coverage visibility: Staff lack a single real-time view of which upcoming events still need volunteers.
 
-Care App is a centralized event management platform that enables MINDS staff to efficiently manage signups for all branches and events across volunteers, caregivers, and care recipients in a scalable and maintainable manner.
+## Solution Overview
 
-By consolidating event management into a single platform, we eliminate the need for multiple Google Forms/Sheets, provide a consistent user experience, and give staff real-time visibility into event coverage across all branches.
+MINDSync consolidates multi-branch event discovery, role-based signup workflows, and real-time volunteer coverage tracking into a single web platform:
 
-## Key Features
-
-### For Staff
-
-- **Centralized Event Management**: View and manage all events across branches in one unified platform
-- **Monthly Organization**: Events organized by month with intuitive sidebar navigation
-- **Coverage Tracking**: Real-time view of required vs. signed-up volunteers per event
-- **Multiple Viewing Modes**:
-  - **Events List**: View all events with signup counts and status indicators
-  - **Coverage Data**: Dashboard showing coverage status (Enough/Not enough) for each event
-  - **Calendar View**: Grid view showing events organized by day
-- **Data Export**: Generate CSV reports for monthly event coverage analysis
-- **Event Details**: Comprehensive view of individual events with full signup information
-
-### For Volunteers, Caregivers & Care Recipients
-
-- **Easy Event Discovery**: Browse events by month with intuitive month selector dropdown
-- **Simple Signup Process**: One-click signup/unsignup for events with real-time status updates
-- **Flexible Viewing Options**:
-  - **Card View**: Detailed event cards with full information (name, type, date/time, duration, capacity)
-  - **Calendar View**: Visual calendar grid showing up to 3 events per day with "+X more" indicator
-- **Event Filtering**: Filter events by type to find relevant opportunities quickly
-- **Real-time Status**: See signup status (signed up/not signed up) and event capacity (full/available) at a glance
-- **Clean Interface**: Full-width layout optimized for viewing and interacting with events
-
-## User Roles
-
-The platform supports four distinct user roles, each with tailored functionality:
-
-- **Staff**: Administrative users who manage events, view coverage data, export reports, and monitor signup status across all branches
-- **Volunteer**: Users who can browse events, sign up for opportunities, and view their commitments
-- **Caregiver**: Users who provide care services and can sign up for relevant events
-- **Care Recipient**: Users who receive care services and can sign up for events
-
-Each role has protected routes with automatic routing based on user profile, ensuring users only see relevant functionality.
+- Staff dashboard: View all branch events organised by month, track required versus confirmed volunteers in real time, inspect individual participant rosters, and export monthly coverage reports as CSV files.
+- Volunteer, caregiver, and care recipient views: Browse events in card or calendar grid layouts, filter by activity type, and sign up or cancel with a single click.
+- Role-based routing: Next.js middleware automatically routes authenticated users (`staff`, `volunteer`, `caregiver`, and `care-recipient`) to their respective workspaces.
 
 ## Technology Stack
 
-- **Frontend Framework**: Next.js 16 with App Router architecture
-- **UI Library**: React 19
-- **Language**: TypeScript (strict mode enabled)
-- **Backend**: Supabase (PostgreSQL database, Authentication, Real-time capabilities)
-- **Styling**: Tailwind CSS v4 (minimal usage), primarily inline styles
-- **Package Manager**: npm
+- Frontend: Next.js 16 (App Router), React 19, and TypeScript (strict mode)
+- Backend: Supabase (PostgreSQL, Authentication, Row Level Security, and Realtime subscriptions)
+- Database logic: Centralised PostgreSQL RPC functions for atomic capacity checks and signup state transitions
 
-### Architecture Highlights
+## Project Structure
 
-- **Server Components by Default**: Optimized for performance with server-side rendering
-- **Client Components When Needed**: Used only for interactivity, hooks, and browser APIs
-- **PostgreSQL RPC Functions**: Centralized business logic at the database level for security and maintainability
-- **Role-Based Access Control**: Middleware-level route protection with automatic role-based routing
+```text
+care-app/
+├── app/                        # Next.js App Router pages and layouts
+│   ├── login/                  # Authentication routes
+│   ├── signup/                 # Registration routes
+│   ├── staff/[month]/          # Staff event list, coverage dashboard, calendar, and CSV export
+│   ├── volunteer/              # Volunteer workspace
+│   ├── caregiver/              # Caregiver workspace
+│   ├── care-recipient/         # Care recipient workspace
+│   └── unauthorized/           # Unauthorised access fallback
+├── lib/                        # Supabase server/browser clients and date utilities
+├── middleware.ts               # Role-based route protection
+└── supabase/migrations/        # SQL schema, RLS policies, and RPC functions
+```
 
 ## Getting Started
 
 ### Prerequisites
 
 - Node.js 18+ and npm
-- Supabase account and project
+- A Supabase project
 
 ### Setup
 
-1. **Install dependencies**
+1. Install dependencies:
    ```bash
    cd care-app
    npm install
    ```
 
-2. **Configure environment variables**
-   
-   Copy `.example.env` to `.env`:
+2. Configure environment variables:
    ```bash
    cp .example.env .env
    ```
-   
-   Then, add your Supabase credentials:
-   ```
+   Add your Supabase project URL and anonymous key to `.env`:
+   ```env
    NEXT_PUBLIC_SUPABASE_URL=your-project-url
    NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
    ```
 
-3. **Set up database**
-   
-   Apply the database migrations from `care-app/supabase/migrations/` to your Supabase project. The migrations include:
-   - Event tables and relationships
-   - User profile management
-   - PostgreSQL RPC functions for signup operations
-   - Row Level Security (RLS) policies
+3. Apply database migrations:
+   Run the SQL migration files in `care-app/supabase/migrations/` against your Supabase project to create the event tables, user profiles, RPC signup functions, and Row Level Security policies.
 
-4. **Run the development server**
+4. Start the development server:
    ```bash
    npm run dev
    ```
-   
    Open [http://localhost:3000](http://localhost:3000) in your browser.
-
-### Available Scripts
-
-- `npm run dev` - Start development server (port 3000)
-- `npm run build` - Build for production
-- `npm run start` - Start production server (requires build first)
-- `npm run lint` - Run ESLint
-
-## Project Structure
-
-```
-care-app/
-├── app/                    # Next.js App Router directory
-│   ├── layout.tsx          # Root layout with fonts and global styles
-│   ├── page.tsx            # Root page (redirects authenticated users)
-│   ├── login/              # Public authentication routes
-│   ├── signup/             # Public signup routes
-│   ├── app/                # Role-based routing entry point
-│   ├── staff/              # Staff-protected routes
-│   │   ├── [month]/        # Dynamic month routes
-│   │   │   ├── page.tsx    # Events list view
-│   │   │   ├── data/       # Coverage data view
-│   │   │   ├── calendar/   # Calendar view
-│   │   │   ├── events/     # Event detail pages
-│   │   │   └── export/     # CSV export API route
-│   ├── volunteer/          # Volunteer routes
-│   ├── caregiver/          # Caregiver routes
-│   ├── care-recipient/     # Care recipient routes
-│   └── unauthorized/       # Unauthorized access page
-├── lib/                    # Utility libraries
-│   ├── supabase/           # Supabase client factories (server & browser)
-│   └── utils/              # Shared utilities (month operations, etc.)
-├── middleware.ts           # Next.js middleware for auth protection
-├── next.config.ts          # Next.js configuration
-└── supabase/               # Database migrations
-    └── migrations/         # SQL migration files
-```
-
-### Protected Routes
-
-Routes prefixed with `/staff`, `/volunteer`, `/caregiver`, `/care-recipient`, `/recipient`, or `/app` require authentication. Unauthenticated users are automatically redirected to `/login` with the original path preserved for post-login redirect.
-
-## Key Benefits
-
-1. **Centralized Management**: All events and signups in one platform, eliminating the need for multiple Google Forms/Sheets
-2. **Scalable Architecture**: Handles multiple branches and events efficiently with PostgreSQL and optimized queries
-3. **Maintainable Codebase**: Single source of truth, consistent format, and well-organized code structure
-4. **User-Friendly Interface**: Intuitive design for both staff and participants with role-appropriate functionality
-5. **Real-time Updates**: Live signup status and coverage tracking without page refreshes
-6. **Data Export**: Easy reporting via CSV export for analysis and record-keeping
-7. **Secure**: Role-based access control, RLS policies, and secure authentication via Supabase
-8. **Consistent Experience**: Unified platform eliminates confusion from scattered calendars and dead links
-
-## How It Works
-
-### Event Management Flow
-
-1. **Staff creates events** (via database or admin interface) with details like name, type, date/time, duration, and required volunteer count
-2. **Events are organized by month** and displayed in monthly views
-3. **Volunteers/Caregivers/Care Recipients** browse events, filter by type, and sign up with one click
-4. **Staff monitors coverage** in real-time through the coverage data view
-5. **Staff exports data** as CSV for reporting and analysis
-
-### Signup Process
-
-- Users click "Sign Up" on an event card
-- System checks authentication and event capacity
-- Signup is recorded in the database (or existing cancelled signup is reactivated)
-- UI updates immediately to reflect new signup status
-- Staff can see updated coverage counts in real-time
-
-### Month-Based Organization
-
-- Events are automatically organized by month based on their date
-- Users navigate between months using dropdown selectors or sidebar navigation
-- Each month view shows all events for that period with signup information
-- Staff can export coverage data for any month
