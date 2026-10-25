@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
+const MONTH_SLUG_RE = /^\d{4}-(0[1-9]|1[0-2])$/;
+
 function monthRange(monthSlug: string) {
   const [yStr, mStr] = monthSlug.split("-");
   const y = Number(yStr);
@@ -11,8 +13,11 @@ function monthRange(monthSlug: string) {
 }
 
 function csvEscape(v: unknown) {
-  const s = String(v ?? "");
-  if (s.includes('"') || s.includes(",") || s.includes("\n")) {
+  let s = String(v ?? "");
+  if (/^[=+\-@\t\r]/.test(s)) {
+    s = `'${s}`;
+  }
+  if (s.includes('"') || s.includes(",") || s.includes("\n") || s.includes("\r")) {
     return `"${s.replace(/"/g, '""')}"`;
   }
   return s;
@@ -23,9 +28,27 @@ export async function GET(
   ctx: { params: Promise<{ month: string }> }
 ) {
   const { month } = await ctx.params;
+  if (!MONTH_SLUG_RE.test(month)) {
+    return NextResponse.json({ error: "Invalid month parameter" }, { status: 400 });
+  }
   const { startISO, endISO } = monthRange(month);
 
   const supabase = await createSupabaseServerClient();
+
+  const { data: { user }, error: userErr } = await supabase.auth.getUser();
+  if (userErr || !user) {
+    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("user_id", user.id)
+    .single();
+
+  if (!profile || profile.role !== "staff") {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
 
   const { data: events, error: eventsErr } = await supabase
     .from("Events")
